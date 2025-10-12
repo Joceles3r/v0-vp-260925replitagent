@@ -1,0 +1,282 @@
+# ==============================================
+# VISUAL Platform - Docker Compose Configuration
+# Production-ready setup with security hardening
+# ==============================================
+version: '3.8'
+
+services:
+  # ==============================================
+  # 🚀 VISUAL Platform Application
+  # ==============================================
+  visual-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: visual-platform
+    restart: unless-stopped
+    user: "node"  # Non-root user
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/log
+    environment:
+      - NODE_ENV=production
+      - PORT=8001
+      - HOST=0.0.0.0
+      # Database
+      - DATABASE_URL=${DATABASE_URL}
+      - MONGO_URL=${DATABASE_URL}  # Compatibility
+      # Authentication
+      - REPLIT_AUTH_DOMAIN=${REPLIT_AUTH_DOMAIN}
+      - REPLIT_AUTH_CLIENT_ID=${REPLIT_AUTH_CLIENT_ID}
+      - REPLIT_AUTH_CLIENT_SECRET=${REPLIT_AUTH_CLIENT_SECRET}
+      # Stripe
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - REACT_APP_STRIPE_PUBLISHABLE_KEY=${REACT_APP_STRIPE_PUBLISHABLE_KEY}
+      # Object Storage
+      - OBJECT_STORAGE_ENDPOINT=${OBJECT_STORAGE_ENDPOINT}
+      - OBJECT_STORAGE_ACCESS_KEY=${OBJECT_STORAGE_ACCESS_KEY}
+      - OBJECT_STORAGE_SECRET_KEY=${OBJECT_STORAGE_SECRET_KEY}
+      - OBJECT_STORAGE_BUCKET=${OBJECT_STORAGE_BUCKET}
+      # Security
+      - SESSION_SECRET=${SESSION_SECRET}
+      - JWT_SECRET=${JWT_SECRET}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      # URLs
+      - FRONTEND_URL=${FRONTEND_URL}
+      - CORS_ORIGIN=${CORS_ORIGIN}
+      # Monitoring
+      - SENTRY_DSN=${SENTRY_DSN}
+      - LOG_LEVEL=info
+    volumes:
+      - uploads_data:/app/uploads:rw
+      - logs_data:/var/log:rw
+    networks:
+      - visual_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8001/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+
+  # Nginx Reverse Proxy with Security Headers
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: visual-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/nginx/security_headers.conf:/etc/nginx/conf.d/security_headers.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro  # Mount SSL certificates
+      - ./client/public:/var/www/static:ro  # Mount static files (robots.txt, security.txt, sitemaps)
+      - uploads_data:/var/www/uploads:ro
+    depends_on:
+      - visual-app
+    networks:
+      - visual_network
+
+  # ==============================================
+  # 🗄️ PostgreSQL Database
+  # ==============================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: visual-postgres
+    restart: unless-stopped
+    user: postgres
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-visual_prod}
+      - POSTGRES_USER=${POSTGRES_USER:-visual_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256 --auth-local=scram-sha-256
+    volumes:
+      - postgres_data:/var/lib/postgresql/data:rw
+      - ./db/migrations:/docker-entrypoint-initdb.d:ro
+    networks:
+      - visual_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-visual_user} -d ${POSTGRES_DB:-visual_prod}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    security_opt:
+      - no-new-privileges:true
+    command: >
+      postgres
+      -c shared_preload_libraries=pg_stat_statements
+      -c pg_stat_statements.track=all
+      -c max_connections=200
+      -c shared_buffers=256MB
+      -c effective_cache_size=1GB
+      -c maintenance_work_mem=64MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=4MB
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
+
+  # ==============================================
+  # 🚀 Redis for Caching & Sessions
+  # ==============================================
+  redis:
+    image: redis:7-alpine
+    container_name: visual-redis
+    restart: unless-stopped
+    user: redis
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+    volumes:
+      - redis_data:/data:rw
+    networks:
+      - visual_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    security_opt:
+      - no-new-privileges:true
+
+  # ==============================================
+  # 🔍 Monitoring (Optional)
+  # ==============================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: visual-prometheus
+    restart: unless-stopped
+    profiles: ["monitoring"]
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus:rw
+    networks:
+      - visual_network
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: visual-grafana
+    restart: unless-stopped
+    profiles: ["monitoring"]
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana:rw
+    networks:
+      - visual_network
+    ports:
+      - "3001:3000"
+
+# ==============================================
+# 📦 VOLUMES PERSISTANTS
+# ==============================================
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-./data}/postgres
+
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-./data}/redis
+
+  uploads_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-./data}/uploads
+
+  logs_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-./data}/logs
+
+  prometheus_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-./data}/prometheus
+
+  grafana_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-./data}/grafana
+
+# ==============================================
+# 🌐 RÉSEAU
+# ==============================================
+networks:
+  visual_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

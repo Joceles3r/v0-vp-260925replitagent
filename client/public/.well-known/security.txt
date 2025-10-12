@@ -1,0 +1,16 @@
+Contact: mailto:security@visual.fr
+Contact: mailto:support@visual.fr
+Policy: https://visual.fr/info#compliance-amf
+Preferred-Languages: fr, en
+Expires: 2099-12-31T23:59:59.000Z
+
+# VISUAL Platform Security Contact Information
+# Pour signaler des vulnérabilités de sécurité, contactez :
+# Email: security@visual.fr (réponse sous 24h)
+# Support général: support@visual.fr
+# 
+# Documentation de sécurité disponible sur :
+# https://visual.fr/info#compliance-amf
+#
+# Nous prenons la sécurité très au sérieux et apprécions
+# les signalements responsables de vulnérabilités.
