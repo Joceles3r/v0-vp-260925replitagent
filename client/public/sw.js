@@ -3,115 +3,108 @@
  * Gestion du cache, synchronisation offline et notifications push
  */
 
-const CACHE_NAME = 'visual-platform-v1.2.0';
-const RUNTIME_CACHE = 'visual-runtime-v1.2.0';
-const API_CACHE = 'visual-api-v1.2.0';
+const CACHE_NAME = "visual-platform-v1.2.0"
+const RUNTIME_CACHE = "visual-runtime-v1.2.0"
+const API_CACHE = "visual-api-v1.2.0"
 
 // Ressources critiques à mettre en cache immédiatement
 const CRITICAL_RESOURCES = [
-  '/',
-  '/visual',
-  '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png',
+  "/",
+  "/visual",
+  "/manifest.json",
+  "/icons/icon-192x192.png",
+  "/icons/icon-512x512.png",
   // Ajout des assets CSS/JS critiques sera fait dynamiquement
-];
+]
 
 // Stratégies de cache par type de ressource
 const CACHE_STRATEGIES = {
   // Pages HTML - Network First avec fallback cache
-  pages: 'network-first',
-  
+  pages: "network-first",
+
   // API - Cache First avec revalidation
-  api: 'cache-first',
-  
+  api: "cache-first",
+
   // Assets statiques - Cache First
-  static: 'cache-first',
-  
+  static: "cache-first",
+
   // Images - Cache First avec cleanup
-  images: 'cache-first',
-};
+  images: "cache-first",
+}
 
 // ===== INSTALLATION =====
-self.addEventListener('install', (event) => {
-  console.log('[SW] Installation démarrée');
-  
+self.addEventListener("install", (event) => {
+  console.log("[SW] Installation démarrée")
+
   event.waitUntil(
     (async () => {
       try {
         // Ouvrir le cache principal
-        const cache = await caches.open(CACHE_NAME);
-        
+        const cache = await caches.open(CACHE_NAME)
+
         // Mettre en cache les ressources critiques
-        await cache.addAll(CRITICAL_RESOURCES);
-        
-        console.log('[SW] Ressources critiques mises en cache');
-        
+        await cache.addAll(CRITICAL_RESOURCES)
+
+        console.log("[SW] Ressources critiques mises en cache")
+
         // Forcer l'activation immédiate
-        await self.skipWaiting();
-        
+        await self.skipWaiting()
       } catch (error) {
-        console.error('[SW] Erreur installation:', error);
+        console.error("[SW] Erreur installation:", error)
       }
-    })()
-  );
-});
+    })(),
+  )
+})
 
 // ===== ACTIVATION =====
-self.addEventListener('activate', (event) => {
-  console.log('[SW] Activation démarrée');
-  
+self.addEventListener("activate", (event) => {
+  console.log("[SW] Activation démarrée")
+
   event.waitUntil(
     (async () => {
       try {
         // Nettoyer les anciens caches
-        const cacheNames = await caches.keys();
-        const oldCaches = cacheNames.filter(name => 
-          name.startsWith('visual-') && 
-          name !== CACHE_NAME && 
-          name !== RUNTIME_CACHE && 
-          name !== API_CACHE
-        );
-        
-        await Promise.all(
-          oldCaches.map(cacheName => caches.delete(cacheName))
-        );
-        
-        console.log('[SW] Anciens caches nettoyés:', oldCaches);
-        
+        const cacheNames = await caches.keys()
+        const oldCaches = cacheNames.filter(
+          (name) => name.startsWith("visual-") && name !== CACHE_NAME && name !== RUNTIME_CACHE && name !== API_CACHE,
+        )
+
+        await Promise.all(oldCaches.map((cacheName) => caches.delete(cacheName)))
+
+        console.log("[SW] Anciens caches nettoyés:", oldCaches)
+
         // Prendre le contrôle immédiatement
-        await self.clients.claim();
-        
+        await self.clients.claim()
       } catch (error) {
-        console.error('[SW] Erreur activation:', error);
+        console.error("[SW] Erreur activation:", error)
       }
-    })()
-  );
-});
+    })(),
+  )
+})
 
 // ===== INTERCEPTION DES REQUÊTES =====
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-  
+self.addEventListener("fetch", (event) => {
+  const { request } = event
+  const url = new URL(request.url)
+
   // Ignorer les requêtes non-HTTP et les websockets
-  if (!request.url.startsWith('http') || url.pathname.includes('_next/webpack')) {
-    return;
+  if (!request.url.startsWith("http") || url.pathname.includes("_next/webpack")) {
+    return
   }
-  
+
   // Stratégie selon le type de ressource
-  if (url.pathname.startsWith('/api/')) {
-    event.respondWith(handleAPIRequest(request));
+  if (url.pathname.startsWith("/api/")) {
+    event.respondWith(handleAPIRequest(request))
   } else if (isPageRequest(request)) {
-    event.respondWith(handlePageRequest(request));
+    event.respondWith(handlePageRequest(request))
   } else if (isStaticAsset(request)) {
-    event.respondWith(handleStaticAsset(request));
+    event.respondWith(handleStaticAsset(request))
   } else if (isImageRequest(request)) {
-    event.respondWith(handleImageRequest(request));
+    event.respondWith(handleImageRequest(request))
   } else {
-    event.respondWith(handleGenericRequest(request));
+    event.respondWith(handleGenericRequest(request))
   }
-});
+})
 
 // ===== STRATÉGIES DE CACHE =====
 
@@ -119,54 +112,53 @@ self.addEventListener('fetch', (event) => {
  * Gestion des requêtes API - Cache First avec revalidation
  */
 async function handleAPIRequest(request) {
-  const cacheName = API_CACHE;
-  
+  const cacheName = API_CACHE
+
   try {
     // Essayer le cache d'abord
-    const cache = await caches.open(cacheName);
-    const cachedResponse = await cache.match(request);
-    
+    const cache = await caches.open(cacheName)
+    const cachedResponse = await cache.match(request)
+
     if (cachedResponse) {
       // Revalidation en arrière-plan pour les GET
-      if (request.method === 'GET') {
+      if (request.method === "GET") {
         fetch(request)
-          .then(response => {
+          .then((response) => {
             if (response.ok) {
-              cache.put(request, response.clone());
+              cache.put(request, response.clone())
             }
           })
           .catch(() => {
             // Ignore les erreurs de revalidation
-          });
+          })
       }
-      
-      return cachedResponse;
+
+      return cachedResponse
     }
-    
+
     // Pas en cache, faire la requête réseau
-    const networkResponse = await fetch(request);
-    
+    const networkResponse = await fetch(request)
+
     // Mettre en cache les réponses GET réussies
-    if (request.method === 'GET' && networkResponse.ok) {
-      cache.put(request, networkResponse.clone());
+    if (request.method === "GET" && networkResponse.ok) {
+      cache.put(request, networkResponse.clone())
     }
-    
-    return networkResponse;
-    
+
+    return networkResponse
   } catch (error) {
-    console.error('[SW] Erreur requête API:', error);
-    
+    console.error("[SW] Erreur requête API:", error)
+
     // Fallback pour les erreurs réseau
     return new Response(
-      JSON.stringify({ 
-        error: 'Service temporairement indisponible',
-        offline: true 
+      JSON.stringify({
+        error: "Service temporairement indisponible",
+        offline: true,
       }),
       {
         status: 503,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
+        headers: { "Content-Type": "application/json" },
+      },
+    )
   }
 }
 
@@ -176,34 +168,33 @@ async function handleAPIRequest(request) {
 async function handlePageRequest(request) {
   try {
     // Essayer le réseau d'abord
-    const networkResponse = await fetch(request);
-    
+    const networkResponse = await fetch(request)
+
     if (networkResponse.ok) {
       // Mettre en cache la page
-      const cache = await caches.open(RUNTIME_CACHE);
-      cache.put(request, networkResponse.clone());
-      return networkResponse;
+      const cache = await caches.open(RUNTIME_CACHE)
+      cache.put(request, networkResponse.clone())
+      return networkResponse
     }
-    
-    throw new Error('Network response not ok');
-    
+
+    throw new Error("Network response not ok")
   } catch (error) {
     // Fallback vers le cache
-    const cache = await caches.open(RUNTIME_CACHE);
-    const cachedResponse = await cache.match(request);
-    
+    const cache = await caches.open(RUNTIME_CACHE)
+    const cachedResponse = await cache.match(request)
+
     if (cachedResponse) {
-      return cachedResponse;
+      return cachedResponse
     }
-    
+
     // Fallback vers la page d'accueil en cache
-    const fallbackResponse = await cache.match('/');
+    const fallbackResponse = await cache.match("/")
     if (fallbackResponse) {
-      return fallbackResponse;
+      return fallbackResponse
     }
-    
+
     // Dernière option: page offline
-    return createOfflinePage();
+    return createOfflinePage()
   }
 }
 
@@ -211,31 +202,30 @@ async function handlePageRequest(request) {
  * Gestion des assets statiques - Cache First
  */
 async function handleStaticAsset(request) {
-  const cache = await caches.open(CACHE_NAME);
-  
+  const cache = await caches.open(CACHE_NAME)
+
   try {
-    const cachedResponse = await cache.match(request);
+    const cachedResponse = await cache.match(request)
     if (cachedResponse) {
-      return cachedResponse;
+      return cachedResponse
     }
-    
-    const networkResponse = await fetch(request);
+
+    const networkResponse = await fetch(request)
     if (networkResponse.ok) {
-      cache.put(request, networkResponse.clone());
+      cache.put(request, networkResponse.clone())
     }
-    
-    return networkResponse;
-    
+
+    return networkResponse
   } catch (error) {
-    console.error('[SW] Erreur asset statique:', error);
-    
+    console.error("[SW] Erreur asset statique:", error)
+
     // Fallback pour les assets critiques
-    if (request.url.includes('icon')) {
-      const fallbackIcon = await cache.match('/icons/icon-192x192.png');
-      if (fallbackIcon) return fallbackIcon;
+    if (request.url.includes("icon")) {
+      const fallbackIcon = await cache.match("/icons/icon-192x192.png")
+      if (fallbackIcon) return fallbackIcon
     }
-    
-    return new Response('Asset non disponible', { status: 404 });
+
+    return new Response("Asset non disponible", { status: 404 })
   }
 }
 
@@ -243,26 +233,25 @@ async function handleStaticAsset(request) {
  * Gestion des images - Cache First avec cleanup
  */
 async function handleImageRequest(request) {
-  const cache = await caches.open(RUNTIME_CACHE);
-  
+  const cache = await caches.open(RUNTIME_CACHE)
+
   try {
-    const cachedResponse = await cache.match(request);
+    const cachedResponse = await cache.match(request)
     if (cachedResponse) {
-      return cachedResponse;
+      return cachedResponse
     }
-    
-    const networkResponse = await fetch(request);
+
+    const networkResponse = await fetch(request)
     if (networkResponse.ok) {
       // Limiter la taille du cache des images
-      await limitCacheSize(RUNTIME_CACHE, 50); // Max 50 images
-      cache.put(request, networkResponse.clone());
+      await limitCacheSize(RUNTIME_CACHE, 50) // Max 50 images
+      cache.put(request, networkResponse.clone())
     }
-    
-    return networkResponse;
-    
+
+    return networkResponse
   } catch (error) {
     // Fallback vers une image placeholder
-    return createPlaceholderImage();
+    return createPlaceholderImage()
   }
 }
 
@@ -271,11 +260,11 @@ async function handleImageRequest(request) {
  */
 async function handleGenericRequest(request) {
   try {
-    return await fetch(request);
+    return await fetch(request)
   } catch (error) {
-    const cache = await caches.open(RUNTIME_CACHE);
-    const cachedResponse = await cache.match(request);
-    return cachedResponse || new Response('Ressource non disponible', { status: 404 });
+    const cache = await caches.open(RUNTIME_CACHE)
+    const cachedResponse = await cache.match(request)
+    return cachedResponse || new Response("Ressource non disponible", { status: 404 })
   }
 }
 
@@ -285,36 +274,35 @@ async function handleGenericRequest(request) {
  * Détermine si c'est une requête de page
  */
 function isPageRequest(request) {
-  return request.method === 'GET' && 
-         request.headers.get('accept')?.includes('text/html');
+  return request.method === "GET" && request.headers.get("accept")?.includes("text/html")
 }
 
 /**
  * Détermine si c'est un asset statique
  */
 function isStaticAsset(request) {
-  const url = new URL(request.url);
-  return /\.(css|js|woff2?|ttf|ico)$/i.test(url.pathname);
+  const url = new URL(request.url)
+  return /\.(css|js|woff2?|ttf|ico)$/i.test(url.pathname)
 }
 
 /**
  * Détermine si c'est une image
  */
 function isImageRequest(request) {
-  const url = new URL(request.url);
-  return /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(url.pathname);
+  const url = new URL(request.url)
+  return /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(url.pathname)
 }
 
 /**
  * Limite la taille d'un cache
  */
 async function limitCacheSize(cacheName, maxItems) {
-  const cache = await caches.open(cacheName);
-  const keys = await cache.keys();
-  
+  const cache = await caches.open(cacheName)
+  const keys = await cache.keys()
+
   if (keys.length > maxItems) {
-    const keysToDelete = keys.slice(0, keys.length - maxItems);
-    await Promise.all(keysToDelete.map(key => cache.delete(key)));
+    const keysToDelete = keys.slice(0, keys.length - maxItems)
+    await Promise.all(keysToDelete.map((key) => cache.delete(key)))
   }
 }
 
@@ -382,11 +370,11 @@ function createOfflinePage() {
       </button>
     </body>
     </html>
-  `;
-  
+  `
+
   return new Response(html, {
-    headers: { 'Content-Type': 'text/html' }
-  });
+    headers: { "Content-Type": "text/html" },
+  })
 }
 
 /**
@@ -401,153 +389,228 @@ function createPlaceholderImage() {
         Image non disponible
       </text>
     </svg>
-  `;
-  
+  `
+
   return new Response(svg, {
-    headers: { 'Content-Type': 'image/svg+xml' }
-  });
+    headers: { "Content-Type": "image/svg+xml" },
+  })
 }
 
 // ===== GESTION DES NOTIFICATIONS PUSH =====
-self.addEventListener('push', (event) => {
-  console.log('[SW] Notification push reçue');
-  
+self.addEventListener("push", (event) => {
+  console.log("[SW] Notification push reçue")
+
   const options = {
-    body: 'Nouveau contenu disponible sur VISUAL Platform',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-72x72.png',
-    tag: 'visual-notification',
+    body: "Nouveau contenu disponible sur VISUAL Platform",
+    icon: "/icons/icon-192x192.png",
+    badge: "/icons/icon-72x72.png",
+    tag: "visual-notification",
     requireInteraction: false,
+    vibrate: [200, 100, 200],
     actions: [
       {
-        action: 'view',
-        title: 'Voir',
-        icon: '/icons/action-view.png'
+        action: "view",
+        title: "Voir",
+        icon: "/icons/action-view.png",
       },
       {
-        action: 'dismiss',
-        title: 'Ignorer'
-      }
+        action: "dismiss",
+        title: "Ignorer",
+      },
     ],
     data: {
       timestamp: Date.now(),
-      url: '/'
-    }
-  };
-  
+      url: "/",
+    },
+  }
+
   if (event.data) {
     try {
-      const payload = event.data.json();
-      Object.assign(options, payload);
+      const payload = event.data.json()
+      Object.assign(options, payload)
     } catch (error) {
-      console.error('[SW] Erreur parsing notification:', error);
+      console.error("[SW] Erreur parsing notification:", error)
     }
   }
-  
-  event.waitUntil(
-    self.registration.showNotification('VISUAL Platform', options)
-  );
-});
+
+  event.waitUntil(self.registration.showNotification("VISUAL Platform", options))
+})
 
 // ===== GESTION DES CLICS SUR NOTIFICATIONS =====
-self.addEventListener('notificationclick', (event) => {
-  console.log('[SW] Clic sur notification:', event.action);
-  
-  event.notification.close();
-  
-  if (event.action === 'dismiss') {
-    return;
+self.addEventListener("notificationclick", (event) => {
+  console.log("[SW] Clic sur notification:", event.action)
+
+  event.notification.close()
+
+  if (event.action === "dismiss") {
+    return
   }
-  
-  const urlToOpen = event.notification.data?.url || '/';
-  
+
+  const urlToOpen = event.notification.data?.url || "/"
+
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true })
-      .then((clientList) => {
-        // Chercher un onglet VISUAL existant
-        for (const client of clientList) {
-          if (client.url.includes(self.location.origin)) {
-            client.focus();
-            client.navigate(urlToOpen);
-            return;
-          }
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      // Chercher un onglet VISUAL existant
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin)) {
+          client.focus()
+          client.navigate(urlToOpen)
+          return
         }
-        
-        // Ouvrir un nouvel onglet
-        clients.openWindow(urlToOpen);
-      })
-  );
-});
+      }
+
+      // Ouvrir un nouvel onglet
+      clients.openWindow(urlToOpen)
+    }),
+  )
+})
 
 // ===== SYNCHRONISATION EN ARRIÈRE-PLAN =====
-self.addEventListener('sync', (event) => {
-  console.log('[SW] Synchronisation:', event.tag);
-  
-  if (event.tag === 'background-sync') {
-    event.waitUntil(doBackgroundSync());
+self.addEventListener("sync", (event) => {
+  console.log("[SW] Synchronisation:", event.tag)
+
+  if (event.tag === "background-sync") {
+    event.waitUntil(doBackgroundSync())
   }
-});
+})
 
 async function doBackgroundSync() {
   try {
-    // Synchroniser les données offline
-    console.log('[SW] Synchronisation des données offline...');
-    
-    // TODO: Implémenter la synchronisation réelle
-    // - Envoyer les actions en attente
-    // - Récupérer les nouvelles données
-    // - Mettre à jour les caches
-    
+    console.log("[SW] Synchronisation des données offline...")
+
+    // Récupérer les actions en attente depuis IndexedDB ou localStorage
+    const pendingActions = await getPendingActions()
+
+    if (pendingActions.length === 0) {
+      console.log("[SW] Aucune action en attente")
+      return
+    }
+
+    console.log(`[SW] ${pendingActions.length} actions à synchroniser`)
+
+    // Synchroniser chaque action
+    for (const action of pendingActions) {
+      try {
+        await syncAction(action)
+        await removePendingAction(action.id)
+        console.log("[SW] Action synchronisée:", action.id)
+      } catch (error) {
+        console.error("[SW] Erreur synchronisation action:", action.id, error)
+        // Garder l'action pour réessayer plus tard
+      }
+    }
+
+    // Notifier le client que la synchronisation est terminée
+    const clients = await self.clients.matchAll()
+    clients.forEach((client) => {
+      client.postMessage({
+        type: "SYNC_COMPLETE",
+        count: pendingActions.length,
+      })
+    })
   } catch (error) {
-    console.error('[SW] Erreur synchronisation:', error);
+    console.error("[SW] Erreur synchronisation:", error)
+  }
+}
+
+async function getPendingActions() {
+  // Récupérer depuis le cache ou IndexedDB
+  try {
+    const cache = await caches.open("visual-offline-actions")
+    const response = await cache.match("/offline-actions")
+    if (response) {
+      return await response.json()
+    }
+  } catch (error) {
+    console.error("[SW] Erreur récupération actions:", error)
+  }
+  return []
+}
+
+async function syncAction(action) {
+  const endpoints = {
+    investment: "/api/invest",
+    like: "/api/social/like",
+    comment: "/api/social/comment",
+    vote: "/api/vote",
+    report: "/api/moderation/report",
+  }
+
+  const endpoint = endpoints[action.type]
+  if (!endpoint) {
+    throw new Error(`Type d'action inconnu: ${action.type}`)
+  }
+
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(action.data),
+  })
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`)
+  }
+
+  return response.json()
+}
+
+async function removePendingAction(actionId) {
+  try {
+    const cache = await caches.open("visual-offline-actions")
+    const response = await cache.match("/offline-actions")
+    if (response) {
+      const actions = await response.json()
+      const filtered = actions.filter((a) => a.id !== actionId)
+      await cache.put("/offline-actions", new Response(JSON.stringify(filtered)))
+    }
+  } catch (error) {
+    console.error("[SW] Erreur suppression action:", error)
   }
 }
 
 // ===== GESTION DES MESSAGES =====
-self.addEventListener('message', (event) => {
+self.addEventListener("message", (event) => {
   if (event.data && event.data.type) {
     switch (event.data.type) {
-      case 'SKIP_WAITING':
-        self.skipWaiting();
-        break;
-        
-      case 'GET_CACHE_SIZE':
-        getCacheSize().then(size => {
-          event.ports[0].postMessage({ size });
-        });
-        break;
-        
-      case 'CLEAR_CACHE':
+      case "SKIP_WAITING":
+        self.skipWaiting()
+        break
+
+      case "GET_CACHE_SIZE":
+        getCacheSize().then((size) => {
+          event.ports[0].postMessage({ size })
+        })
+        break
+
+      case "CLEAR_CACHE":
         clearAllCaches().then(() => {
-          event.ports[0].postMessage({ cleared: true });
-        });
-        break;
+          event.ports[0].postMessage({ cleared: true })
+        })
+        break
     }
   }
-});
+})
 
 async function getCacheSize() {
-  const cacheNames = await caches.keys();
-  let totalSize = 0;
-  
+  const cacheNames = await caches.keys()
+  let totalSize = 0
+
   for (const cacheName of cacheNames) {
-    if (cacheName.startsWith('visual-')) {
-      const cache = await caches.open(cacheName);
-      const keys = await cache.keys();
-      totalSize += keys.length;
+    if (cacheName.startsWith("visual-")) {
+      const cache = await caches.open(cacheName)
+      const keys = await cache.keys()
+      totalSize += keys.length
     }
   }
-  
-  return totalSize;
+
+  return totalSize
 }
 
 async function clearAllCaches() {
-  const cacheNames = await caches.keys();
-  const visualCaches = cacheNames.filter(name => name.startsWith('visual-'));
-  
-  await Promise.all(
-    visualCaches.map(cacheName => caches.delete(cacheName))
-  );
+  const cacheNames = await caches.keys()
+  const visualCaches = cacheNames.filter((name) => name.startsWith("visual-"))
+
+  await Promise.all(visualCaches.map((cacheName) => caches.delete(cacheName)))
 }
 
-console.log('[SW] Service Worker VISUAL Platform initialisé');
+console.log("[SW] Service Worker VISUAL Platform initialisé")

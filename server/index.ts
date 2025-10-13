@@ -7,6 +7,7 @@ import { setupSecurity } from "./config/security"
 import { setupGDPRCompliance } from "./middleware/gdprCompliance"
 import { initializeConnectionPool } from "./services/connectionPool"
 import { scheduleOptimizationTasks } from "./services/databaseOptimizer"
+import { createBackup, autoRollbackIfNeeded, cleanupOldBackups } from "./services/backupService"
 
 // 🔒 SECURITY: Validate all critical secrets before starting server
 // In production, this will block startup if default/insecure secrets are detected
@@ -92,6 +93,48 @@ app.use((req, res, next) => {
       log(`serving on port ${port}`)
 
       scheduleOptimizationTasks()
+
+      const BACKUP_INTERVAL = 24 * 60 * 60 * 1000 // 24 hours
+      setInterval(async () => {
+        try {
+          log("[Backup] Starting scheduled backup...")
+          await createBackup()
+          log("[Backup] Scheduled backup completed successfully")
+        } catch (error) {
+          console.error("[Backup] Scheduled backup failed:", error)
+        }
+      }, BACKUP_INTERVAL)
+
+      try {
+        log("[Backup] Creating initial backup on startup...")
+        await createBackup()
+        log("[Backup] Initial backup completed")
+      } catch (error) {
+        console.error("[Backup] Initial backup failed:", error)
+      }
+
+      const HEALTH_CHECK_INTERVAL = 5 * 60 * 1000 // 5 minutes
+      setInterval(async () => {
+        try {
+          const rolledBack = await autoRollbackIfNeeded()
+          if (rolledBack) {
+            log("[Backup] Auto-rollback triggered and completed")
+          }
+        } catch (error) {
+          console.error("[Backup] Auto-rollback check failed:", error)
+        }
+      }, HEALTH_CHECK_INTERVAL)
+
+      const CLEANUP_INTERVAL = 7 * 24 * 60 * 60 * 1000 // 7 days
+      setInterval(async () => {
+        try {
+          log("[Backup] Starting cleanup of old backups...")
+          const deletedCount = await cleanupOldBackups(30)
+          log(`[Backup] Cleanup completed: ${deletedCount} old backups removed`)
+        } catch (error) {
+          console.error("[Backup] Cleanup failed:", error)
+        }
+      }, CLEANUP_INTERVAL)
 
       // Initialiser les paramètres de plateforme
       try {

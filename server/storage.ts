@@ -67,21 +67,14 @@ import {
   annoncesReports,
   escrowTransactions,
   annoncesSanctions,
-  // Tables fonctionnalités sociales interactives
-  liveChatMessages,
-  messageReactions,
-  livePolls,
-  pollVotes,
-  engagementPoints,
-  userBadges,
+  type LivePrediction,
+  type PredictionBet,
   // Tables nouvelles pour modernisation PRO
   stripeEvents,
   securityAuditLog,
   user2FA,
   gdprRequests,
   adminBreakGlassOtp,
-  livePredictions,
-  predictionBets,
   // Tables ebooks avec licences JWT
   ebooks,
   ebookLicenses,
@@ -935,6 +928,44 @@ export interface IStorage {
   getPushSubscription(userId: string): Promise<{ endpoint: string; keys: { p256dh: string; auth: string } } | null>
   removePushSubscription(userId: string): Promise<void>
   getAllPushSubscribedUsers(): Promise<string[]>
+
+  /**
+   * Anti-scraping and fingerprinting storage methods
+   */
+
+  // Suspicious activity tracking
+  saveSuspiciousActivity(
+    activities: Array<{
+      fingerprintId: string
+      reason: string
+      severity: "low" | "medium" | "high"
+      timestamp: number
+      metadata?: any
+    }>,
+  ): Promise<void>
+
+  isDeviceBlocked(visitorId: string): Promise<boolean>
+
+  blockDevice(visitorId: string, reason: string, duration: number): Promise<void>
+
+  getDeviceActivity(
+    visitorId: string,
+    since: number,
+  ): Promise<
+    Array<{
+      visitorId: string
+      path: string
+      method: string
+      timestamp: number
+    }>
+  >
+
+  recordDeviceActivity(activity: {
+    visitorId: string
+    path: string
+    method: string
+    timestamp: number
+  }): Promise<void>
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2192,6 +2223,100 @@ export class DatabaseStorage implements IStorage {
       .limit(limit)
   }
 
+  // Daily quests operations
+  async getUserDailyQuest(userId: string, questDate: string, questType?: string): Promise<DailyQuest | undefined> {
+    const conditions = [eq(dailyQuests.userId, userId), eq(dailyQuests.questDate, questDate)]
+
+    if (questType) {
+      conditions.push(eq(dailyQuests.questType, questType))
+    }
+
+    const results = await db
+      .select()
+      .from(dailyQuests)
+      .where(and(...conditions))
+      .limit(1)
+
+    return results[0]
+  }
+
+  async createDailyQuest(quest: InsertDailyQuest): Promise<DailyQuest> {
+    const [newQuest] = await db.insert(dailyQuests).values(quest).returning()
+    return newQuest
+  }
+
+  async updateDailyQuest(questId: string, updates: Partial<DailyQuest>): Promise<DailyQuest> {
+    const [updatedQuest] = await db.update(dailyQuests).set(updates).where(eq(dailyQuests.id, questId)).returning()
+
+    if (!updatedQuest) {
+      throw new Error(`Daily quest with id '${questId}' not found`)
+    }
+
+    return updatedQuest
+  }
+
+  async getDailyQuestById(questId: string): Promise<DailyQuest | undefined> {
+    const results = await db.select().from(dailyQuests).where(eq(dailyQuests.id, questId)).limit(1)
+
+    return results[0]
+  }
+
+  async getUserQuestStatistics(userId: string): Promise<
+    | {
+        totalCompleted: number
+        currentStreak: number
+        totalVPEarned: number
+      }
+    | undefined
+  > {
+    try {
+      // Récupérer le nombre total de quêtes complétées
+      const completedQuests = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(dailyQuests)
+        .where(and(eq(dailyQuests.userId, userId), eq(dailyQuests.isCompleted, true)))
+
+      // Récupérer le total des VISUpoints gagnés
+      const totalVP = await db
+        .select({ total: sql<number>`coalesce(sum(${dailyQuests.rewardVP}), 0)::int` })
+        .from(dailyQuests)
+        .where(and(eq(dailyQuests.userId, userId), eq(dailyQuests.isRewardClaimed, true)))
+
+      // Calculer le streak actuel (jours consécutifs avec quêtes complétées)
+      const today = new Date()
+      let currentStreak = 0
+
+      for (let i = 0; i < 30; i++) {
+        // Vérifier les 30 derniers jours max
+        const checkDate = new Date(today)
+        checkDate.setDate(checkDate.getDate() - i)
+        const dateStr = checkDate.toISOString().split("T")[0]
+
+        const dayQuest = await this.getUserDailyQuest(userId, dateStr)
+
+        if (dayQuest && dayQuest.isCompleted) {
+          if (i === 0 || currentStreak > 0) {
+            currentStreak++
+          }
+        } else if (i === 0) {
+          // Si pas de quête complétée aujourd'hui, vérifier hier
+          continue
+        } else {
+          break // Streak cassé
+        }
+      }
+
+      return {
+        totalCompleted: completedQuests[0]?.count || 0,
+        currentStreak,
+        totalVPEarned: totalVP[0]?.total || 0,
+      }
+    } catch (error) {
+      console.error("Error getting user quest statistics:", error)
+      return undefined
+    }
+  }
+
   // Articles operations for Infoporteurs
   async createArticle(article: InsertArticle): Promise<Article> {
     const [newArticle] = await db.insert(articles).values(article).returning()
@@ -2270,58 +2395,7 @@ export class DatabaseStorage implements IStorage {
     return updatedInvestment
   }
 
-  // VISUpoints packs operations
-  async getVisuPointsPacks(): Promise<VisuPointsPack[]> {
-    return await db
-      .select()
-      .from(visuPointsPacks)
-      .where(eq(visuPointsPacks.isActive, true))
-      .orderBy(asc(visuPointsPacks.sortOrder))
-  }
-
-  async createVisuPointsPack(pack: InsertVisuPointsPack): Promise<VisuPointsPack> {
-    const [newPack] = await db.insert(visuPointsPacks).values(pack).returning()
-    return newPack
-  }
-
-  async updateVisuPointsPack(id: string, updates: Partial<VisuPointsPack>): Promise<VisuPointsPack> {
-    const [updatedPack] = await db.update(visuPointsPacks).set(updates).where(eq(visuPointsPacks.id, id)).returning()
-    return updatedPack
-  }
-
-  // VISUpoints purchases operations
-  async createVisuPointsPurchase(purchase: InsertVisuPointsPurchase): Promise<VisuPointsPurchase> {
-    const [newPurchase] = await db.insert(visuPointsPurchases).values(purchase).returning()
-    return newPurchase
-  }
-
-  async getUserVisuPointsPurchases(userId: string): Promise<VisuPointsPurchase[]> {
-    return await db
-      .select()
-      .from(visuPointsPurchases)
-      .where(eq(visuPointsPurchases.userId, userId))
-      .orderBy(desc(visuPointsPurchases.createdAt))
-  }
-
-  // Nouvelles méthodes pour TOP10 et fidélité
-  async getArticleInvestmentsByDate(date: Date): Promise<ArticleInvestment[]> {
-    const startOfDay = new Date(date)
-    startOfDay.setHours(0, 0, 0, 0)
-    const endOfDay = new Date(date)
-    endOfDay.setHours(23, 59, 59, 999)
-
-    return await db
-      .select()
-      .from(articleInvestments)
-      .where(and(gte(articleInvestments.createdAt, startOfDay), lte(articleInvestments.createdAt, endOfDay)))
-      .orderBy(desc(articleInvestments.createdAt))
-  }
-
-  async getArticlesByAuthor(authorId: string): Promise<Article[]> {
-    return await db.select().from(articles).where(eq(articles.authorId, authorId)).orderBy(desc(articles.createdAt))
-  }
-
-  // TOP10 Infoporteurs methods
+  // TOP10 system operations
   async createTop10Infoporteur(data: any): Promise<Top10Infoporteurs> {
     const [result] = await db.insert(top10Infoporteurs).values(data).returning()
     return result
@@ -2345,7 +2419,6 @@ export class DatabaseStorage implements IStorage {
     return result
   }
 
-  // TOP10 Winners methods
   async createTop10Winner(data: any): Promise<Top10Winners> {
     const [result] = await db.insert(top10Winners).values(data).returning()
     return result
@@ -2369,7 +2442,6 @@ export class DatabaseStorage implements IStorage {
     return result
   }
 
-  // TOP10 Redistributions methods
   async createTop10Redistribution(data: any): Promise<Top10Redistributions> {
     const [result] = await db.insert(top10Redistributions).values(data).returning()
     return result
@@ -2404,7 +2476,7 @@ export class DatabaseStorage implements IStorage {
     return result
   }
 
-  // Weekly streaks methods
+  // Weekly streaks operations
   async getUserWeeklyStreak(userId: string): Promise<WeeklyStreaks | undefined> {
     const [result] = await db.select().from(weeklyStreaks).where(eq(weeklyStreaks.userId, userId)).limit(1)
 
@@ -2441,6 +2513,57 @@ export class DatabaseStorage implements IStorage {
   async updateArticleSaleDaily(id: string, updates: any): Promise<ArticleSalesDaily> {
     const [result] = await db.update(articleSalesDaily).set(updates).where(eq(articleSalesDaily.id, id)).returning()
     return result
+  }
+
+  // VISUpoints packs operations
+  async getVisuPointsPacks(): Promise<VisuPointsPack[]> {
+    return await db
+      .select()
+      .from(visuPointsPacks)
+      .where(eq(visuPointsPacks.isActive, true))
+      .orderBy(asc(visuPointsPacks.sortOrder))
+  }
+
+  async createVisuPointsPack(pack: InsertVisuPointsPack): Promise<VisuPointsPack> {
+    const [newPack] = await db.insert(visuPointsPacks).values(pack).returning()
+    return newPack
+  }
+
+  async updateVisuPointsPack(id: string, updates: Partial<VisuPointsPack>): Promise<VisuPointsPack> {
+    const [updatedPack] = await db.update(visuPointsPacks).set(updates).where(eq(visuPointsPacks.id, id)).returning()
+    return updatedPack
+  }
+
+  // VISUpoints purchases operations
+  async createVisuPointsPurchase(purchase: InsertVisuPointsPurchase): Promise<VisuPointsPurchase> {
+    const [newPurchase] = await db.insert(visuPointsPurchases).values(purchase).returning()
+    return newPurchase
+  }
+
+  async getUserVisuPointsPurchases(userId: string): Promise<VisuPointsPurchase[]> {
+    return await db
+      .select()
+      .from(visuPointsPurchases)
+      .where(eq(visuPointsPurchases.userId, userId))
+      .orderBy(desc(visuPointsPurchases.createdAt))
+  }
+
+  // Get article investments by date
+  async getArticleInvestmentsByDate(date: Date): Promise<ArticleInvestment[]> {
+    const startOfDay = new Date(date)
+    startOfDay.setHours(0, 0, 0, 0)
+    const endOfDay = new Date(date)
+    endOfDay.setHours(23, 59, 59, 999)
+
+    return await db
+      .select()
+      .from(articleInvestments)
+      .where(and(gte(articleInvestments.createdAt, startOfDay), lte(articleInvestments.createdAt, endOfDay)))
+      .orderBy(desc(articleInvestments.createdAt))
+  }
+
+  async getArticlesByAuthor(authorId: string): Promise<Article[]> {
+    return await db.select().from(articles).where(eq(articles.authorId, authorId)).orderBy(desc(articles.createdAt))
   }
 
   // ===== STRIPE TRANSFERS OPERATIONS (IDEMPOTENT TRANSFERS) =====
@@ -3210,594 +3333,7 @@ export class DatabaseStorage implements IStorage {
     return result
   }
 
-  // Daily quests operations
-  async getUserDailyQuest(userId: string, questDate: string, questType?: string): Promise<DailyQuest | undefined> {
-    const conditions = [eq(dailyQuests.userId, userId), eq(dailyQuests.questDate, questDate)]
-
-    if (questType) {
-      conditions.push(eq(dailyQuests.questType, questType))
-    }
-
-    const results = await db
-      .select()
-      .from(dailyQuests)
-      .where(and(...conditions))
-      .limit(1)
-
-    return results[0]
-  }
-
-  async createDailyQuest(quest: InsertDailyQuest): Promise<DailyQuest> {
-    const [newQuest] = await db.insert(dailyQuests).values(quest).returning()
-    return newQuest
-  }
-
-  async updateDailyQuest(questId: string, updates: Partial<DailyQuest>): Promise<DailyQuest> {
-    const [updatedQuest] = await db.update(dailyQuests).set(updates).where(eq(dailyQuests.id, questId)).returning()
-
-    if (!updatedQuest) {
-      throw new Error(`Daily quest with id '${questId}' not found`)
-    }
-
-    return updatedQuest
-  }
-
-  async getDailyQuestById(questId: string): Promise<DailyQuest | undefined> {
-    const results = await db.select().from(dailyQuests).where(eq(dailyQuests.id, questId)).limit(1)
-
-    return results[0]
-  }
-
-  async getUserQuestStatistics(userId: string): Promise<
-    | {
-        totalCompleted: number
-        currentStreak: number
-        totalVPEarned: number
-      }
-    | undefined
-  > {
-    try {
-      // Récupérer le nombre total de quêtes complétées
-      const completedQuests = await db
-        .select({ count: sql<number>`count(*)::int` })
-        .from(dailyQuests)
-        .where(and(eq(dailyQuests.userId, userId), eq(dailyQuests.isCompleted, true)))
-
-      // Récupérer le total des VISUpoints gagnés
-      const totalVP = await db
-        .select({ total: sql<number>`coalesce(sum(${dailyQuests.rewardVP}), 0)::int` })
-        .from(dailyQuests)
-        .where(and(eq(dailyQuests.userId, userId), eq(dailyQuests.isRewardClaimed, true)))
-
-      // Calculer le streak actuel (jours consécutifs avec quêtes complétées)
-      const today = new Date()
-      let currentStreak = 0
-
-      for (let i = 0; i < 30; i++) {
-        // Vérifier les 30 derniers jours max
-        const checkDate = new Date(today)
-        checkDate.setDate(checkDate.getDate() - i)
-        const dateStr = checkDate.toISOString().split("T")[0]
-
-        const dayQuest = await this.getUserDailyQuest(userId, dateStr)
-
-        if (dayQuest && dayQuest.isCompleted) {
-          if (i === 0 || currentStreak > 0) {
-            currentStreak++
-          }
-        } else if (i === 0) {
-          // Si pas de quête complétée aujourd'hui, vérifier hier
-          continue
-        } else {
-          break // Streak cassé
-        }
-      }
-
-      return {
-        totalCompleted: completedQuests[0]?.count || 0,
-        currentStreak,
-        totalVPEarned: totalVP[0]?.total || 0,
-      }
-    } catch (error) {
-      console.error("Error getting user quest statistics:", error)
-      return undefined
-    }
-  }
-
-  // ===== LIVE SOCIAL FEATURES IMPLEMENTATION =====
-
-  // Live chat messages operations
-  async createLiveChatMessage(data: {
-    liveShowId: string
-    userId: string
-    content: string
-    messageType?: string
-    isModerated?: boolean
-    moderationReason?: string | null
-  }): Promise<LiveChatMessage> {
-    const messageData = {
-      id: nanoid(),
-      liveShowId: data.liveShowId,
-      userId: data.userId,
-      content: data.content,
-      messageType: data.messageType || "chat",
-      isModerated: data.isModerated || false,
-      moderationReason: data.moderationReason,
-      reactionCount: 0,
-      createdAt: new Date(),
-    }
-
-    const [newMessage] = await db.insert(liveChatMessages).values(messageData).returning()
-    return newMessage
-  }
-
-  async getLiveChatMessage(id: string): Promise<LiveChatMessage | undefined> {
-    const [message] = await db.select().from(liveChatMessages).where(eq(liveChatMessages.id, id))
-    return message
-  }
-
-  async updateLiveChatMessage(id: string, updates: Partial<LiveChatMessage>): Promise<LiveChatMessage> {
-    const [updatedMessage] = await db
-      .update(liveChatMessages)
-      .set(updates)
-      .where(eq(liveChatMessages.id, id))
-      .returning()
-
-    if (!updatedMessage) {
-      throw new Error(`Live chat message with id '${id}' not found`)
-    }
-
-    return updatedMessage
-  }
-
-  async getLiveShowMessages(liveShowId: string, limit = 50, offset = 0): Promise<LiveChatMessage[]> {
-    return await db
-      .select()
-      .from(liveChatMessages)
-      .where(eq(liveChatMessages.liveShowId, liveShowId))
-      .orderBy(desc(liveChatMessages.createdAt))
-      .limit(limit)
-      .offset(offset)
-  }
-
-  async getUserLiveShowMessageCount(userId: string, liveShowId: string): Promise<number> {
-    const [result] = await db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(liveChatMessages)
-      .where(and(eq(liveChatMessages.userId, userId), eq(liveChatMessages.liveShowId, liveShowId)))
-
-    return result?.count || 0
-  }
-
-  async getLiveShowMessageCount(liveShowId: string): Promise<number> {
-    const [result] = await db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(liveChatMessages)
-      .where(eq(liveChatMessages.liveShowId, liveShowId))
-
-    return result?.count || 0
-  }
-
-  // Message reactions operations
-  async createMessageReaction(data: { messageId: string; userId: string; reaction: string }): Promise<MessageReaction> {
-    const reactionData = {
-      id: nanoid(),
-      messageId: data.messageId,
-      userId: data.userId,
-      reaction: data.reaction,
-      createdAt: new Date(),
-    }
-
-    const [newReaction] = await db.insert(messageReactions).values(reactionData).returning()
-    return newReaction
-  }
-
-  async updateMessageReaction(id: string, updates: Partial<MessageReaction>): Promise<MessageReaction> {
-    const [updatedReaction] = await db
-      .update(messageReactions)
-      .set(updates)
-      .where(eq(messageReactions.id, id))
-      .returning()
-
-    if (!updatedReaction) {
-      throw new Error(`Message reaction with id '${id}' not found`)
-    }
-
-    return updatedReaction
-  }
-
-  async removeMessageReaction(messageId: string, userId: string, reaction: string): Promise<void> {
-    await db
-      .delete(messageReactions)
-      .where(
-        and(
-          eq(messageReactions.messageId, messageId),
-          eq(messageReactions.userId, userId),
-          eq(messageReactions.reaction, reaction),
-        ),
-      )
-  }
-
-  async getMessageReactions(messageId: string): Promise<MessageReaction[]> {
-    return await db
-      .select()
-      .from(messageReactions)
-      .where(eq(messageReactions.messageId, messageId))
-      .orderBy(desc(messageReactions.createdAt))
-  }
-
-  async getUserMessageReaction(messageId: string, userId: string): Promise<MessageReaction | undefined> {
-    const [reaction] = await db
-      .select()
-      .from(messageReactions)
-      .where(and(eq(messageReactions.messageId, messageId), eq(messageReactions.userId, userId)))
-      .limit(1)
-
-    return reaction
-  }
-
-  async getUserLiveShowReactionCount(userId: string, liveShowId: string): Promise<number> {
-    const [result] = await db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(messageReactions)
-      .innerJoin(liveChatMessages, eq(messageReactions.messageId, liveChatMessages.id))
-      .where(and(eq(messageReactions.userId, userId), eq(liveChatMessages.liveShowId, liveShowId)))
-
-    return result?.count || 0
-  }
-
-  // Live polls operations
-  async createLivePoll(data: {
-    liveShowId: string
-    createdBy: string
-    question: string
-    options: string
-    endsAt?: Date
-  }): Promise<LivePoll> {
-    const pollData = {
-      id: nanoid(),
-      liveShowId: data.liveShowId,
-      createdBy: data.createdBy,
-      question: data.question,
-      options: data.options,
-      isActive: true,
-      totalVotes: 0,
-      endsAt: data.endsAt,
-      createdAt: new Date(),
-    }
-
-    const [newPoll] = await db.insert(livePolls).values(pollData).returning()
-    return newPoll
-  }
-
-  async getLivePoll(id: string): Promise<LivePoll | undefined> {
-    const [poll] = await db.select().from(livePolls).where(eq(livePolls.id, id))
-    return poll
-  }
-
-  async updateLivePoll(id: string, updates: Partial<LivePoll>): Promise<LivePoll> {
-    const [updatedPoll] = await db.update(livePolls).set(updates).where(eq(livePolls.id, id)).returning()
-
-    if (!updatedPoll) {
-      throw new Error(`Live poll with id '${id}' not found`)
-    }
-
-    return updatedPoll
-  }
-
-  async deactivateExpiredPolls(): Promise<void> {
-    await db
-      .update(livePolls)
-      .set({ isActive: false })
-      .where(and(eq(livePolls.isActive, true), sql`${livePolls.endsAt} < now()`))
-  }
-
-  // Poll votes operations
-  async createPollVote(data: { pollId: string; userId: string; optionIndex: number }): Promise<PollVote> {
-    const voteData = {
-      id: nanoid(),
-      pollId: data.pollId,
-      userId: data.userId,
-      optionIndex: data.optionIndex,
-      createdAt: new Date(),
-    }
-
-    const [newVote] = await db.insert(pollVotes).values(voteData).returning()
-    return newVote
-  }
-
-  async updatePollVote(id: string, updates: Partial<PollVote>): Promise<PollVote> {
-    const [updatedVote] = await db.update(pollVotes).set(updates).where(eq(pollVotes.id, id)).returning()
-
-    if (!updatedVote) {
-      throw new Error(`Poll vote with id '${id}' not found`)
-    }
-
-    return updatedVote
-  }
-
-  async getPollVotes(pollId: string): Promise<PollVote[]> {
-    return await db.select().from(pollVotes).where(eq(pollVotes.pollId, pollId)).orderBy(desc(pollVotes.createdAt))
-  }
-
-  async getUserPollVote(pollId: string, userId: string): Promise<PollVote | undefined> {
-    const [vote] = await db
-      .select()
-      .from(pollVotes)
-      .where(and(eq(pollVotes.pollId, pollId), eq(pollVotes.userId, userId)))
-      .limit(1)
-
-    return vote
-  }
-
-  // Engagement points operations
-  async createEngagementPoint(data: {
-    userId: string
-    liveShowId?: string
-    pointType: string
-    points: number
-    description?: string
-  }): Promise<EngagementPoint> {
-    const pointData = {
-      id: nanoid(),
-      userId: data.userId,
-      liveShowId: data.liveShowId,
-      pointType: data.pointType,
-      points: data.points,
-      description: data.description,
-      createdAt: new Date(),
-    }
-
-    const [newPoint] = await db.insert(engagementPoints).values(pointData).returning()
-    return newPoint
-  }
-
-  async getUserTotalEngagementPoints(userId: string): Promise<number> {
-    const [result] = await db
-      .select({ total: sql<number>`coalesce(sum(${engagementPoints.points}), 0)::int` })
-      .from(engagementPoints)
-      .where(eq(engagementPoints.userId, userId))
-
-    return result?.total || 0
-  }
-
-  async getUserDailyEngagementPoints(userId: string): Promise<number> {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-
-    const [result] = await db
-      .select({ total: sql<number>`coalesce(sum(${engagementPoints.points}), 0)::int` })
-      .from(engagementPoints)
-      .where(and(eq(engagementPoints.userId, userId), sql`${engagementPoints.createdAt} >= ${today}`))
-
-    return result?.total || 0
-  }
-
-  async getUserEngagementRank(userId: string): Promise<number> {
-    const userTotal = await this.getUserTotalEngagementPoints(userId)
-
-    const [result] = await db
-      .select({ rank: sql<number>`count(distinct ${engagementPoints.userId})::int + 1` })
-      .from(engagementPoints)
-      .where(sql`(
-        select coalesce(sum(points), 0) 
-        from ${engagementPoints} ep2 
-        where ep2.user_id = ${engagementPoints.userId}
-      ) > ${userTotal}`)
-
-    return result?.rank || 1
-  }
-
-  async getTopEngagementUsers(
-    liveShowId?: string,
-    period = "today",
-    limit = 10,
-  ): Promise<Array<{ userId: string; totalPoints: number }>> {
-    let timeCondition = sql`true`
-
-    if (period === "today") {
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      timeCondition = sql`${engagementPoints.createdAt} >= ${today}`
-    } else if (period === "week") {
-      const weekAgo = new Date()
-      weekAgo.setDate(weekAgo.getDate() - 7)
-      timeCondition = sql`${engagementPoints.createdAt} >= ${weekAgo}`
-    }
-
-    const conditions = [timeCondition]
-    if (liveShowId) {
-      conditions.push(eq(engagementPoints.liveShowId, liveShowId))
-    }
-
-    return await db
-      .select({
-        userId: engagementPoints.userId,
-        totalPoints: sql<number>`sum(${engagementPoints.points})::int`,
-      })
-      .from(engagementPoints)
-      .where(and(...conditions))
-      .groupBy(engagementPoints.userId)
-      .orderBy(desc(sql`sum(${engagementPoints.points})`))
-      .limit(limit)
-  }
-
-  // User badges operations
-  async createUserBadge(data: {
-    userId: string
-    liveShowId?: string
-    badgeType: string
-    badgeName: string
-    badgeDescription?: string
-  }): Promise<UserBadge> {
-    const badgeData = {
-      id: nanoid(),
-      userId: data.userId,
-      liveShowId: data.liveShowId,
-      badgeType: data.badgeType,
-      badgeName: data.badgeName,
-      badgeDescription: data.badgeDescription,
-      createdAt: new Date(),
-    }
-
-    const [newBadge] = await db.insert(userBadges).values(badgeData).returning()
-    return newBadge
-  }
-
-  async getUserBadge(userId: string, badgeType: string, liveShowId?: string): Promise<UserBadge | undefined> {
-    const conditions = [eq(userBadges.userId, userId), eq(userBadges.badgeType, badgeType)]
-
-    if (liveShowId) {
-      conditions.push(eq(userBadges.liveShowId, liveShowId))
-    }
-
-    const [badge] = await db
-      .select()
-      .from(userBadges)
-      .where(and(...conditions))
-      .limit(1)
-
-    return badge
-  }
-
-  async getUserBadges(userId: string): Promise<UserBadge[]> {
-    return await db.select().from(userBadges).where(eq(userBadges.userId, userId)).orderBy(desc(userBadges.createdAt))
-  }
-
-  // Live predictions operations
-  async createLivePrediction(data: {
-    liveShowId: string
-    createdBy: string
-    question: string
-    outcomes: string
-    endsAt?: Date
-  }): Promise<LivePrediction> {
-    const predictionData = {
-      id: nanoid(),
-      liveShowId: data.liveShowId,
-      createdBy: data.createdBy,
-      question: data.question,
-      outcomes: data.outcomes,
-      isActive: true,
-      totalBets: 0,
-      totalAmount: "0",
-      endsAt: data.endsAt,
-      winningOutcome: null,
-      createdAt: new Date(),
-    }
-
-    const [newPrediction] = await db.insert(livePredictions).values(predictionData).returning()
-    return newPrediction
-  }
-
-  async getLivePrediction(id: string): Promise<LivePrediction | undefined> {
-    const [prediction] = await db.select().from(livePredictions).where(eq(livePredictions.id, id))
-    return prediction
-  }
-
-  async updateLivePrediction(id: string, updates: Partial<LivePrediction>): Promise<LivePrediction> {
-    const [updatedPrediction] = await db
-      .update(livePredictions)
-      .set(updates)
-      .where(eq(livePredictions.id, id))
-      .returning()
-
-    if (!updatedPrediction) {
-      throw new Error(`Live prediction with id '${id}' not found`)
-    }
-
-    return updatedPrediction
-  }
-
-  async deactivateExpiredPredictions(): Promise<void> {
-    await db
-      .update(livePredictions)
-      .set({ isActive: false })
-      .where(and(eq(livePredictions.isActive, true), sql`${livePredictions.endsAt} < now()`))
-  }
-
-  // Prediction bets operations
-  async createPredictionBet(data: {
-    predictionId: string
-    userId: string
-    outcomeIndex: number
-    amount: string
-    potentialWin: string
-  }): Promise<PredictionBet> {
-    const betData = {
-      id: nanoid(),
-      predictionId: data.predictionId,
-      userId: data.userId,
-      outcomeIndex: data.outcomeIndex,
-      amount: data.amount,
-      potentialWin: data.potentialWin,
-      isWinner: null,
-      createdAt: new Date(),
-    }
-
-    const [newBet] = await db.insert(predictionBets).values(betData).returning()
-    return newBet
-  }
-
-  async updatePredictionBet(id: string, updates: Partial<PredictionBet>): Promise<PredictionBet> {
-    const [updatedBet] = await db.update(predictionBets).set(updates).where(eq(predictionBets.id, id)).returning()
-
-    if (!updatedBet) {
-      throw new Error(`Prediction bet with id '${id}' not found`)
-    }
-
-    return updatedBet
-  }
-
-  async getPredictionBets(predictionId: string): Promise<PredictionBet[]> {
-    return await db
-      .select()
-      .from(predictionBets)
-      .where(eq(predictionBets.predictionId, predictionId))
-      .orderBy(desc(predictionBets.createdAt))
-  }
-
-  async getUserPredictionBet(predictionId: string, userId: string): Promise<PredictionBet | undefined> {
-    const [bet] = await db
-      .select()
-      .from(predictionBets)
-      .where(and(eq(predictionBets.predictionId, predictionId), eq(predictionBets.userId, userId)))
-      .limit(1)
-
-    return bet
-  }
-
-  // Analytics operations for social features
-  async isUserTopInvestorForLiveShow(userId: string, liveShowId: string): Promise<boolean> {
-    // Récupérer le total des investissements de l'utilisateur pour ce Live Show
-    const [userInvestment] = await db
-      .select({ total: sql<number>`coalesce(sum(cast(${investments.amount} as decimal)), 0)` })
-      .from(investments)
-      .innerJoin(projects, eq(investments.projectId, projects.id))
-      .where(and(eq(investments.userId, userId), eq(projects.liveShowId, liveShowId)))
-
-    if (!userInvestment?.total || userInvestment.total === 0) {
-      return false
-    }
-
-    // Récupérer le plus gros investissement pour ce Live Show
-    const [topInvestment] = await db.select({ maxTotal: sql<number>`max(user_totals.total)` }).from(
-      db
-        .select({
-          userId: investments.userId,
-          total: sql<number>`sum(cast(${investments.amount} as decimal))`,
-        })
-        .from(investments)
-        .innerJoin(projects, eq(investments.projectId, projects.id))
-        .where(eq(projects.liveShowId, liveShowId))
-        .groupBy(investments.userId)
-        .as("user_totals"),
-    )
-
-    return userInvestment.total >= (topInvestment?.maxTotal || 0)
-  }
-
-  // ===== PETITES ANNONCES IMPLEMENTATION =====
+  // ===== PETITES ANNONCES OPERATIONS =====
 
   // Petites annonces CRUD operations
   async createPetiteAnnonce(annonce: InsertPetitesAnnonces): Promise<PetitesAnnonces> {
@@ -4543,12 +4079,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Admin Break-Glass OTP operations
-  async createAdminBreakGlassOtp(data: any): Promise<any> {
-    const [result] = await db.insert(adminBreakGlassOtp).values(data).returning()
+  async createAdminOtp(otp: InsertAdminBreakGlassOtp): Promise<AdminBreakGlassOtp> {
+    const [result] = await db.insert(adminBreakGlassOtp).values(otp).returning()
     return result
   }
 
-  async getActiveAdminOtp(otpCodeHash: string): Promise<any> {
+  async getActiveAdminOtp(otpCodeHash: string): Promise<AdminBreakGlassOtp | undefined> {
     const [result] = await db
       .select()
       .from(adminBreakGlassOtp)
@@ -4560,30 +4096,32 @@ export class DatabaseStorage implements IStorage {
         ),
       )
       .limit(1)
-    return result || null
+    return result
   }
 
-  async useAdminBreakGlassOtp(otpCode: string, userId: string, ipAddress?: string, userAgent?: string): Promise<void> {
+  async markAdminOtpUsed(id: string, usedBy: string, ipAddress?: string, userAgent?: string): Promise<void> {
     await db
       .update(adminBreakGlassOtp)
       .set({
         status: "used",
         usedAt: new Date(),
-        usedBy: userId,
+        usedBy,
         ipAddress,
         userAgent,
       })
-      .where(eq(adminBreakGlassOtp.otpCode, otpCode))
+      .where(eq(adminBreakGlassOtp.id, id))
   }
 
-  async expireOldAdminOtps(): Promise<void> {
-    await db
+  async expireOldAdminOtps(): Promise<number> {
+    const result = await db
       .update(adminBreakGlassOtp)
       .set({ status: "expired" })
       .where(and(eq(adminBreakGlassOtp.status, "active"), lt(adminBreakGlassOtp.expiresAt, new Date())))
+      .returning()
+    return result.length
   }
 
-  async getAdminOtpHistory(limit = 50): Promise<any[]> {
+  async getAdminOtpHistory(limit = 50): Promise<AdminBreakGlassOtp[]> {
     return await db.select().from(adminBreakGlassOtp).orderBy(desc(adminBreakGlassOtp.createdAt)).limit(limit)
   }
 
@@ -4875,6 +4413,64 @@ export class DatabaseStorage implements IStorage {
     const subscriptions = await db.select({ userId: pushSubscriptions.userId }).from(pushSubscriptions)
 
     return subscriptions.map((sub) => sub.userId)
+  }
+
+  /**
+   * Anti-scraping and fingerprinting storage methods
+   */
+
+  // Suspicious activity tracking
+  async saveSuspiciousActivity(
+    activities: Array<{
+      fingerprintId: string
+      reason: string
+      severity: "low" | "medium" | "high"
+      timestamp: number
+      metadata?: any
+    }>,
+  ): Promise<void> {
+    // Store suspicious activities in memory or database
+    // For now, just log them
+    for (const activity of activities) {
+      console.log("[Storage] Suspicious activity:", activity)
+    }
+  }
+
+  async isDeviceBlocked(visitorId: string): Promise<boolean> {
+    // Check if device is blocked
+    // For now, return false (no blocking)
+    return false
+  }
+
+  async blockDevice(visitorId: string, reason: string, duration: number): Promise<void> {
+    // Block a device for a specific duration
+    console.log(`[Storage] Blocking device ${visitorId} for ${duration}ms: ${reason}`)
+  }
+
+  async getDeviceActivity(
+    visitorId: string,
+    since: number,
+  ): Promise<
+    Array<{
+      visitorId: string
+      path: string
+      method: string
+      timestamp: number
+    }>
+  > {
+    // Get device activity since timestamp
+    // For now, return empty array
+    return []
+  }
+
+  async recordDeviceActivity(activity: {
+    visitorId: string
+    path: string
+    method: string
+    timestamp: number
+  }): Promise<void> {
+    // Record device activity
+    console.log("[Storage] Device activity:", activity)
   }
 }
 

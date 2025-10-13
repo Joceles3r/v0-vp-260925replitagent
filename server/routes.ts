@@ -23,6 +23,7 @@ import { notificationService } from "./services/notificationService"
 import { liveShowOrchestrator } from "./services/liveShowOrchestrator"
 import { generateReceiptPDF } from "./receipts/handlers"
 import { registerPushNotificationRoutes } from "./routes/pushNotificationRoutes"
+import backupRoutes from "./routes/backupRoutes"
 
 // Initialize Stripe
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -2346,6 +2347,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Push notification routes
   registerPushNotificationRoutes(app)
+
+  app.use("/api/backups", backupRoutes)
 
   return httpServer
 }

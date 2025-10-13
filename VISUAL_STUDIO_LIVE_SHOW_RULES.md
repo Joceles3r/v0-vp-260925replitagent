@@ -191,4 +191,4 @@ Tous les événements suivants sont journalisés avec horodatage :
 **Note** : Cette distribution BATTLE 40/30/20/10 remplace définitivement l'ancienne distribution 40/30/7/23 pour le VISUAL Studio Live Show. L'ancienne distribution reste applicable aux autres catégories de contenus (vidéos, articles, etc.).
 \`\`\`
 
-```typescript file="" isHidden
+\`\`\`typescript file="" isHidden
