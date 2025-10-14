@@ -99,6 +99,7 @@
     "@vitest/browser": "latest",
     "@vitest/ui": "latest",
     "@xata.io/client": "latest",
+    "axios": "latest",
     "better-sqlite3": "latest",
     "bufferutil": "latest",
     "bun-types": "latest",
