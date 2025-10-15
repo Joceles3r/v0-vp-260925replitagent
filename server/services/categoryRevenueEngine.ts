@@ -12,7 +12,7 @@ import {
   zipfWeights,
   euroFloor,
   type TopMode,
-} from "@shared/categoryRules"
+} from "@shared/category-rules"
 
 export interface CategoryPayoutItem {
   accountId: string

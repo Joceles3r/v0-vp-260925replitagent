@@ -16,7 +16,7 @@ import {
   validateCategoryPayoutInput,
   type CategoryPayoutCalculation as FilmsVideosPayoutCalculation,
 } from "./categoryRevenueEngine"
-import { CATEGORY_FILMS_VIDEOS_DOCS_RULES } from "@shared/categoryRules"
+import { CATEGORY_FILMS_VIDEOS_DOCS_RULES } from "@shared/category-rules"
 
 // Configuration runtime VisualFinanceAI
 export const VISUAL_FINANCE_CONFIG = {

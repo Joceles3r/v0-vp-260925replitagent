@@ -4,7 +4,7 @@
  */
 
 import { calculateCategoryPayout, validateCategoryPayoutInput } from "../../server/services/categoryRevenueEngine"
-import { selectTopMode, computeK, zipfWeights } from "../../shared/categoryRules"
+import { selectTopMode, computeK, zipfWeights } from "../../shared/category-rules"
 
 describe("Category Revenue Engine - Films/Vidéos/Documentaires", () => {
   describe("Mode Selection", () => {
