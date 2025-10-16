@@ -41,6 +41,7 @@ import VoixInfoDashboardPage from "@/pages/voix-info-dashboard"
 import MinorVisitorDashboardPage from "@/pages/minor-visitor-dashboard"
 import OverdraftManagementPage from "@/pages/overdraft-management"
 import PoadcastsPage from "@/pages/Poadcasts"
+import LivresRankingsPage from "@/pages/LivresRankings"
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth()
@@ -95,6 +96,7 @@ function Router() {
             <Route path="/minor-visitor-dashboard" component={MinorVisitorDashboardPage} />
             <Route path="/wallet/overdraft" component={OverdraftManagementPage} />
             <Route path="/poadcasts" component={PoadcastsPage} />
+            <Route path="/livres" component={LivresRankingsPage} />
             <Route path="/admin" component={Admin} />
             <Route path="/admin/dashboard" component={AdminDashboard} />
             <Route component={NotFound} />

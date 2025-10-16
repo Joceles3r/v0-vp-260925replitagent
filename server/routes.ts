@@ -24,6 +24,8 @@ import { liveShowOrchestrator } from "./services/liveShowOrchestrator"
 import { generateReceiptPDF } from "./receipts/handlers"
 import { registerPushNotificationRoutes } from "./routes/pushNotificationRoutes"
 import backupRoutes from "./routes/backupRoutes"
+import livresRoutes from "./routes/livresRoutes"
+import categoryTogglesRoutes from "./routes/categoryTogglesRoutes"
 
 // Initialize Stripe
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -2349,6 +2351,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerPushNotificationRoutes(app)
 
   app.use("/api/backups", backupRoutes)
+
+  app.use("/api", livresRoutes)
+
+  app.use("/api/admin/categories", categoryTogglesRoutes)
 
   return httpServer
 }

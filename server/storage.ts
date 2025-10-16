@@ -67,8 +67,6 @@ import {
   annoncesReports,
   escrowTransactions,
   annoncesSanctions,
-  type LivePrediction,
-  type PredictionBet,
   // Tables nouvelles pour modernisation PRO
   stripeEvents,
   securityAuditLog,
@@ -247,8 +245,6 @@ import {
   type InsertEbookLicense,
   type InsertEbookDownloadAttempt,
   // Types classement mensuel & leaderboard
-  type ProjectMonthlyRanking,
-  type InsertProjectMonthlyRanking,
 } from "@shared/schema"
 import { ESCROW_FEE_RATE, ESCROW_MINIMUM_FEE } from "@shared/constants"
 import { db } from "./db"
@@ -752,6 +748,7 @@ export interface IStorage {
   updateBook(id: string, updates: Partial<Book>): Promise<Book>
   getPendingBooks(): Promise<Book[]>
   getActiveBooks(categoryId?: string): Promise<Book[]>
+  getAllBooks(): Promise<Book[]> // Added getAllBooks method for admin queue management
 
   // LIVRES Purchase operations (lecteurs)
   createBookPurchase(purchase: InsertBookPurchase): Promise<BookPurchase>
@@ -772,6 +769,7 @@ export interface IStorage {
   createFeatureToggle(toggle: InsertFeatureToggle): Promise<FeatureToggle>
   getFeatureToggle(key: string): Promise<FeatureToggle | undefined>
   getFeatureToggles(): Promise<FeatureToggle[]>
+  getAllFeatureToggles(): Promise<FeatureToggle[]> // Added alias method
   updateFeatureToggle(key: string, updates: Partial<FeatureToggle>): Promise<FeatureToggle>
   getPublicToggles(): Promise<{ [key: string]: { visible: boolean; message: string } }>
 
@@ -860,6 +858,7 @@ export interface IStorage {
   // 2FA operations (nouvelles méthodes PRO)
   upsertUser2FA(user2FA: InsertUser2FA): Promise<User2FA>
   getUser2FA(userId: string): Promise<User2FA | undefined>
+  updateUser2FAStatus(userId: string, status: string): Promise<void>
   updateUser2FAStatus(userId: string, status: string): Promise<void>
   updateUser2FALastUsed(userId: string): Promise<void>
   updateUser2FABackupCodes(userId: string, backupCodes: string[]): Promise<void>
@@ -2493,7 +2492,7 @@ export class DatabaseStorage implements IStorage {
     return result
   }
 
-  // Article sales daily operations implementation
+  // Article sales daily operations (for TOP10 system)
   async getArticleSaleDaily(articleId: string, saleDate: string): Promise<ArticleSalesDaily | undefined> {
     const dateObj = new Date(saleDate + "T00:00:00Z") // Convert string to Date
     const [result] = await db
@@ -3183,6 +3182,10 @@ export class DatabaseStorage implements IStorage {
     return await query.orderBy(desc(books.createdAt))
   }
 
+  async getAllBooks(): Promise<Book[]> {
+    return await db.select().from(books).orderBy(desc(books.createdAt))
+  }
+
   // LIVRES Purchase operations (lecteurs)
   async createBookPurchase(purchase: InsertBookPurchase): Promise<BookPurchase> {
     const [newPurchase] = await db.insert(bookPurchases).values(purchase).returning()
@@ -3270,6 +3273,10 @@ export class DatabaseStorage implements IStorage {
 
   async getFeatureToggles(): Promise<FeatureToggle[]> {
     return await db.select().from(featureToggles).orderBy(asc(featureToggles.label))
+  }
+
+  async getAllFeatureToggles(): Promise<FeatureToggle[]> {
+    return this.getFeatureToggles()
   }
 
   async updateFeatureToggle(key: string, updates: Partial<FeatureToggle>): Promise<FeatureToggle> {
