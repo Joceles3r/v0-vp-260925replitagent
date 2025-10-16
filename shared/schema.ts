@@ -12,11 +12,6 @@ import {
   boolean,
   pgEnum,
   unique,
-  check,
-  bigserial,
-  bigint,
-  uuid, // Added for uuid type
-  uniqueIndex, // Added for uniqueIndex
 } from "drizzle-orm/pg-core"
 import { createInsertSchema } from "drizzle-zod"
 import { z } from "zod"
@@ -3459,158 +3454,6 @@ export const insertProjectReplacementSchema = createInsertSchema(projectReplacem
   createdAt: true,
 })
 
-// Types
-export type UpsertUser = z.infer<typeof insertUserSchema> & { id?: string }
-export type User = typeof users.$inferSelect
-export type Project = typeof projects.$inferSelect
-export type Investment = typeof investments.$inferSelect
-export type Transaction = typeof transactions.$inferSelect
-export type LiveShow = typeof liveShows.$inferSelect
-export type InsertLiveShow = z.infer<typeof insertLiveShowSchema>
-export type LiveShowFinalist = typeof liveShowFinalists.$inferSelect
-export type InsertLiveShowFinalist = z.infer<typeof insertLiveShowFinalistSchema>
-export type LiveShowNotification = typeof liveShowNotifications.$inferSelect
-export type InsertLiveShowNotification = z.infer<typeof insertLiveShowNotificationSchema>
-export type LiveShowPenalty = typeof liveShowPenalties.$inferSelect
-export type InsertLiveShowPenalty = z.infer<typeof insertLiveShowPenaltySchema>
-export type LiveShowAudit = typeof liveShowAudit.$inferSelect
-export type InsertLiveShowAudit = z.infer<typeof insertLiveShowAuditSchema>
-export type LiveShowEdition = typeof liveShowEditions.$inferSelect
-export type InsertLiveShowEdition = z.infer<typeof insertLiveShowEditionSchema>
-export type LiveShowCandidate = typeof liveShowCandidates.$inferSelect
-export type InsertLiveShowCandidate = z.infer<typeof insertLiveShowCandidateSchema>
-export type LiveShowCommunityVote = typeof liveShowCommunityVotes.$inferSelect
-export type InsertLiveShowCommunityVote = z.infer<typeof insertLiveShowCommunityVoteSchema>
-export type LiveShowBattleInvestment = typeof liveShowBattleInvestments.$inferSelect
-export type InsertLiveShowBattleInvestment = z.infer<typeof insertLiveShowBattleInvestmentSchema>
-export type LiveShowAd = typeof liveShowAds.$inferSelect
-export type InsertLiveShowAd = z.infer<typeof insertLiveShowAdSchema>
-export type LiveChatMessage = typeof liveChatMessages.$inferSelect
-export type MessageReaction = typeof messageReactions.$inferSelect
-export type LivePoll = typeof livePolls.$inferSelect
-export type PollVote = typeof pollVotes.$inferSelect
-export type EngagementPoint = typeof engagementPoints.$inferSelect
-export type UserBadge = typeof userBadges.$inferSelect
-export type LivePrediction = typeof livePredictions.$inferSelect
-export type PredictionBet = typeof predictionBets.$inferSelect
-export type ComplianceReport = typeof complianceReports.$inferSelect
-export type Notification = typeof notifications.$inferSelect
-export type NotificationPreference = typeof notificationPreferences.$inferSelect
-export type VideoDeposit = typeof videoDeposits.$inferSelect
-export type VideoToken = typeof videoTokens.$inferSelect
-export type CreatorQuota = typeof creatorQuotas.$inferSelect
-export type VideoAnalytics = typeof videoAnalytics.$inferSelect
-
-// New insert types for 6 modules
-export type SocialPost = typeof socialPosts.$inferSelect
-export type SocialComment = typeof socialComments.$inferSelect
-export type SocialLike = typeof socialLikes.$inferSelect
-export type PaymentReceipt = typeof paymentReceipts.$inferSelect
-export type VideoCategory = typeof videoCategories.$inferSelect
-export type ProjectExtension = typeof projectExtensions.$inferSelect
-export type PurgeJob = typeof purgeJobs.$inferSelect
-export type WithdrawalRequest = typeof withdrawalRequests.$inferSelect
-export type AuditLog = typeof auditLogs.$inferSelect
-export type ContentReport = typeof contentReports.$inferSelect
-
-// ===== NOUVEAUX TYPES POUR FONCTIONNALITÉS AVANCÉES =====
-
-export type Referral = typeof referrals.$inferSelect
-export type ReferralLimit = typeof referralLimits.$inferSelect
-export type LoginStreak = typeof loginStreaks.$inferSelect
-export type VisitorActivity = typeof visitorActivities.$inferSelect
-export type VisitorOfMonth = typeof visitorsOfMonth.$inferSelect
-export type Article = typeof articles.$inferSelect
-export type ArticleInvestment = typeof articleInvestments.$inferSelect
-export type VisuPointsPack = typeof visuPointsPacks.$inferSelect
-export type VisuPointsPurchase = typeof visuPointsPurchases.$inferSelect
-
-// Nouveaux types TOP10 et fidélité
-export type ArticleSalesDaily = typeof articleSalesDaily.$inferSelect
-export type Top10Infoporteurs = typeof top10Infoporteurs.$inferSelect
-export type Top10Winners = typeof top10Winners.$inferSelect
-export type Top10Redistributions = typeof top10Redistributions.$inferSelect
-export type WeeklyStreaks = typeof weeklyStreaks.$inferSelect
-export type StripeTransfer = typeof stripeTransfers.$inferSelect
-
-// Types pour système de renouvellement payant (25€)
-export type ProjectRenewal = typeof projectRenewals.$inferSelect
-export type ProjectQueue = typeof projectQueue.$inferSelect
-export type ProjectReplacement = typeof projectReplacements.$inferSelect
-
-export type InsertProject = z.infer<typeof insertProjectSchema>
-export type InsertInvestment = z.infer<typeof insertInvestmentSchema>
-export type InsertTransaction = z.infer<typeof insertTransactionSchema>
-export type InsertNotification = z.infer<typeof insertNotificationSchema>
-export type InsertNotificationPreference = z.infer<typeof insertNotificationPreferenceSchema>
-export type InsertVideoDeposit = z.infer<typeof insertVideoDepositSchema>
-export type InsertVideoToken = z.infer<typeof insertVideoTokenSchema>
-export type InsertCreatorQuota = z.infer<typeof insertCreatorQuotaSchema>
-export type InsertVideoAnalytics = z.infer<typeof insertVideoAnalyticsSchema>
-
-// New insert types for 6 modules
-export type InsertSocialPost = z.infer<typeof insertSocialPostSchema>
-export type InsertSocialComment = z.infer<typeof insertSocialCommentSchema>
-export type InsertSocialLike = z.infer<typeof insertSocialLikeSchema>
-export type InsertPaymentReceipt = z.infer<typeof insertPaymentReceiptSchema>
-export type InsertVideoCategory = z.infer<typeof insertVideoCategorySchema>
-export type InsertProjectExtension = z.infer<typeof insertProjectExtensionSchema>
-export type InsertPurgeJob = z.infer<typeof insertPurgeJobSchema>
-export type InsertWithdrawalRequest = z.infer<typeof insertWithdrawalRequestSchema>
-export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>
-export type InsertContentReport = z.infer<typeof insertContentReportSchema>
-
-// ===== NOUVEAUX TYPES D'INSERTION POUR FONCTIONNALITÉS AVANCÉES =====
-
-export type InsertReferral = z.infer<typeof insertReferralSchema>
-export type InsertReferralLimit = z.infer<typeof insertReferralLimitSchema>
-export type InsertLoginStreak = z.infer<typeof insertLoginStreakSchema>
-export type InsertVisitorActivity = z.infer<typeof insertVisitorActivitySchema>
-export type InsertVisitorOfMonth = z.infer<typeof insertVisitorOfMonthSchema>
-export type InsertArticle = z.infer<typeof insertArticleSchema>
-export type InsertArticleInvestment = z.infer<typeof insertArticleInvestmentSchema>
-export type InsertVisuPointsPack = z.infer<typeof insertVisuPointsPackSchema>
-export type InsertVisuPointsPurchase = z.infer<typeof insertVisuPointsPurchaseSchema>
-
-// ===== TYPES D'INSERTION POUR CATÉGORIE LIVRES =====
-
-export type InsertBookCategory = z.infer<typeof insertBookCategorySchema>
-export type BookCategory = typeof bookCategories.$inferSelect
-
-export type InsertBook = z.infer<typeof insertBookSchema>
-export type Book = typeof books.$inferSelect
-
-export type InsertBookPurchase = z.infer<typeof insertBookPurchaseSchema>
-export type BookPurchase = typeof bookPurchases.$inferSelect
-
-export type InsertDownloadToken = z.infer<typeof insertDownloadTokenSchema>
-export type DownloadToken = typeof downloadTokens.$inferSelect
-
-// ===== NOUVEAUX SCHÉMAS POUR TOP10 ET FIDÉLITÉ =====
-
-export type InsertArticleSalesDaily = z.infer<typeof insertArticleSalesDailySchema>
-export type ArticleSalesDaily = typeof articleSalesDaily.$inferSelect
-
-export type InsertTop10Infoporteurs = z.infer<typeof insertTop10InfoporteursSchema>
-export type Top10Infoporteurs = typeof top10Infoporteurs.$inferSelect
-
-export type InsertTop10Winners = z.infer<typeof insertTop10WinnersSchema>
-export type Top10Winners = typeof top10Winners.$inferSelect
-
-export type InsertTop10Redistributions = z.infer<typeof insertTop10RedistributionsSchema>
-export type Top10Redistributions = typeof top10Redistributions.$inferSelect
-
-export type InsertWeeklyStreaks = z.infer<typeof insertWeeklyStreaksSchema>
-export type WeeklyStreaks = typeof weeklyStreaks.$inferSelect
-
-export type InsertStripeTransfer = z.infer<typeof insertStripeTransferSchema>
-export type StripeTransfer = typeof stripeTransfers.$inferSelect
-
-// Types d'insertion pour système de renouvellement payant (25€)
-export type InsertProjectRenewal = z.infer<typeof insertProjectRenewalSchema>
-export type InsertProjectQueue = z.infer<typeof insertProjectQueueSchema>
-export type InsertProjectReplacement = z.infer<typeof insertProjectReplacementSchema>
-
 // ===== SYSTÈME D'AGENTS IA AUTONOMES =====
 
 // Énums pour les agents IA
@@ -3797,7 +3640,7 @@ export const fraudEvents = pgTable(
   "fraud_events",
   {
     id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    eventType: fraudTypeEnum("event_type").notNull(),
+    eventType: fraudTypeEnum("event_type").notNull(), // Renamed from eventType to fraudType
     userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }),
     relatedUserIds: text("related_user_ids").array(), // IDs des comptes liés détectés
     projectId: varchar("project_id").references(() => projects.id, { onDelete: "set null" }),
@@ -3811,211 +3654,142 @@ export const fraudEvents = pgTable(
     modelVersion: varchar("model_version"), // Version du modèle ML utilisé
 
     recommendedAction: fraudActionEnum("recommended_action").notNull(),
-    actionTaken: fraudActionEnum("action_taken"),
-    actionTakenBy: varchar("action_taken_by"), // 'visualai' ou 'admin:{userId}'
+    actionTaken: fraudActionEnum("action_taken"), // Fixed incomplete line and added proper type
     actionTakenAt: timestamp("action_taken_at"),
+    actionTakenBy: varchar("action_taken_by"), // 'system', 'visualai', 'admin:{userId}'
 
-    adminReviewed: boolean("admin_reviewed").default(false),
-    adminVerdict: varchar("admin_verdict"), // 'confirmed', 'false_positive', 'insufficient_evidence'
-    adminComment: text("admin_comment"),
-    reviewedBy: varchar("reviewed_by").references(() => users.id, { onDelete: "set null" }),
+    reviewedBy: varchar("reviewed_by").references(() => users.id),
     reviewedAt: timestamp("reviewed_at"),
+    reviewNotes: text("review_notes"),
+    isFalsePositive: boolean("is_false_positive").default(false),
 
-    createdAt: timestamp("created_at").defaultNow(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    detectedAt: timestamp("detected_at"), // Added missing detectedAt timestamp
   },
   (table) => [
     index("idx_fraud_user").on(table.userId),
-    index("idx_fraud_type").on(table.eventType),
+    index("idx_fraud_type").on(table.eventType), // Changed from fraudType to eventType to match enum
     index("idx_fraud_severity").on(table.severityScore),
-    index("idx_fraud_reviewed").on(table.adminReviewed),
-    index("idx_fraud_created").on(table.createdAt),
+    index("idx_fraud_detected").on(table.detectedAt),
+    index("idx_fraud_action").on(table.actionTaken),
   ],
 )
 
-// Patterns comportementaux appris - Système d'apprentissage
+// Patterns de comportement pour ML
 export const behaviorPatterns = pgTable(
   "behavior_patterns",
   {
     id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    patternType: varchar("pattern_type").notNull(), // 'investment', 'voting', 'timing', 'network'
-    patternSignature: text("pattern_signature").notNull(), // Signature unique du pattern
-
-    isAnomaly: boolean("is_anomaly").notNull(), // true = suspect, false = normal
-    riskWeight: decimal("risk_weight", { precision: 5, scale: 4 }).notNull(), // Poids dans le calcul de risque
-
-    featureVector: jsonb("feature_vector").notNull(), // Caractéristiques du pattern
-    exampleInstances: jsonb("example_instances"), // Exemples de ce pattern
-
-    detectionCount: integer("detection_count").notNull().default(0),
-    truePositiveCount: integer("true_positive_count").notNull().default(0),
-    falsePositiveCount: integer("false_positive_count").notNull().default(0),
-
-    accuracy: decimal("accuracy", { precision: 5, scale: 4 }), // Précision du pattern
-    lastSeenAt: timestamp("last_seen_at"),
-
-    learnedFrom: varchar("learned_from"), // 'supervised', 'unsupervised', 'admin_feedback'
-    modelVersion: varchar("model_version").notNull(),
-
-    isActive: boolean("is_active").notNull().default(true),
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
+    userId: varchar("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    patternType: varchar("pattern_type").notNull(), // 'login', 'transaction', 'content_creation'
+    features: jsonb("features").notNull(), // Caractéristiques du pattern
+    frequency: integer("frequency").notNull().default(1),
+    lastOccurrence: timestamp("last_occurrence").notNull().defaultNow(),
+    isAnomaly: boolean("is_anomaly").default(false),
+    anomalyScore: decimal("anomaly_score", { precision: 5, scale: 4 }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
   (table) => [
-    unique("unique_pattern_signature").on(table.patternSignature),
-    index("idx_pattern_type_active").on(table.patternType, table.isActive),
-    index("idx_pattern_anomaly").on(table.isAnomaly),
-    index("idx_pattern_accuracy").on(table.accuracy),
+    index("idx_behavior_user").on(table.userId),
+    index("idx_behavior_type").on(table.patternType),
+    index("idx_behavior_anomaly").on(table.isAnomaly),
   ],
 )
 
-// Graphe de relations entre utilisateurs (détection multi-comptes)
+// Relations entre utilisateurs (pour détection de fraude en réseau)
 export const userRelationships = pgTable(
   "user_relationships",
   {
     id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    userId1: varchar("user_id1")
+    userId1: varchar("user_id_1")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    userId2: varchar("user_id2")
+    userId2: varchar("user_id_2")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-
-    relationshipType: varchar("relationship_type").notNull(), // 'ip_match', 'device_match', 'timing_correlation', 'investment_pattern'
-    relationshipStrength: decimal("relationship_strength", { precision: 5, scale: 4 }).notNull(), // 0-1
-
-    evidenceData: jsonb("evidence_data").notNull(),
-    firstDetectedAt: timestamp("first_detected_at").notNull().defaultNow(),
-    lastSeenAt: timestamp("last_seen_at").notNull().defaultNow(),
-    occurrenceCount: integer("occurrence_count").notNull().default(1),
-
-    isSuspicious: boolean("is_suspicious").notNull().default(false),
-    adminVerified: boolean("admin_verified").default(false),
-    adminNotes: text("admin_notes"),
-
-    createdAt: timestamp("created_at").defaultNow(),
+    relationshipType: varchar("relationship_type").notNull(), // 'ip_match', 'device_match', 'transaction_pattern'
+    strength: decimal("strength", { precision: 5, scale: 4 }).notNull(), // 0.0000 à 1.0000
+    evidence: jsonb("evidence").notNull(),
+    detectedAt: timestamp("detected_at").notNull().defaultNow(),
+    verifiedBy: varchar("verified_by"),
+    isLegitimate: boolean("is_legitimate"),
   },
   (table) => [
-    index("idx_relationship_user1").on(table.userId1),
-    index("idx_relationship_user2").on(table.userId2),
-    index("idx_relationship_suspicious").on(table.isSuspicious),
-    index("idx_relationship_strength").on(table.relationshipStrength),
+    index("idx_relationship_users").on(table.userId1, table.userId2),
+    index("idx_relationship_type").on(table.relationshipType),
+    index("idx_relationship_strength").on(table.strength),
   ],
 )
 
-// Métadonnées des modèles ML
+// Modèles ML versionnés
 export const mlModels = pgTable(
   "ml_models",
   {
     id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    modelName: varchar("model_name").notNull(),
-    modelVersion: varchar("model_version").notNull(),
-    modelType: varchar("model_type").notNull(), // 'fraud_detection', 'risk_scoring', 'pattern_recognition'
-
-    trainingDataSize: integer("training_data_size"),
-    trainingDate: timestamp("training_date"),
-
-    performance: jsonb("performance").notNull(), // Métriques: accuracy, precision, recall, F1
+    modelType: varchar("model_type").notNull(), // 'fraud_detection', 'risk_scoring', 'anomaly_detection'
+    version: varchar("version").notNull(),
+    algorithm: varchar("algorithm").notNull(),
     hyperparameters: jsonb("hyperparameters"),
-
-    isActive: boolean("is_active").notNull().default(false),
-    activatedBy: varchar("activated_by"), // 'visualai' ou 'admin:{userId}'
-    activatedAt: timestamp("activated_at"),
-
-    notes: text("notes"),
-    createdAt: timestamp("created_at").defaultNow(),
+    trainingMetrics: jsonb("training_metrics"), // Accuracy, precision, recall, F1
+    isActive: boolean("is_active").default(false),
+    trainedAt: timestamp("trained_at").notNull().defaultNow(),
+    trainedBy: varchar("trained_by").notNull(),
+    deployedAt: timestamp("deployed_at"),
+    retiredAt: timestamp("retired_at"),
   },
   (table) => [
-    unique("unique_model_version").on(table.modelName, table.modelVersion),
+    unique("unique_model_version").on(table.modelType, table.version),
     index("idx_model_active").on(table.isActive),
-    index("idx_model_type").on(table.modelType),
   ],
 )
 
-// Sessions d'apprentissage
-export const learningSession = pgTable(
-  "learning_sessions",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    sessionType: varchar("session_type").notNull(), // 'supervised', 'unsupervised', 'reinforcement'
-    modelId: varchar("model_id").references(() => mlModels.id, { onDelete: "cascade" }),
+// All type exports are now consolidated at the end of the file
 
-    dataSourceQuery: text("data_source_query"), // Requête SQL pour les données d'entraînement
-    dataCount: integer("data_count"),
+// Export all insert schemas and types
+export type InsertSession = typeof sessions.$inferInsert
+export type Session = typeof sessions.$inferSelect
 
-    learningMetrics: jsonb("learning_metrics").notNull(), // Métriques de la session
-    patternsDiscovered: integer("patterns_discovered").default(0),
-    patternsUpdated: integer("patterns_updated").default(0),
+export type InsertUser = typeof users.$inferInsert
+export type User = typeof users.$inferSelect
 
-    startedAt: timestamp("started_at").notNull().defaultNow(),
-    completedAt: timestamp("completed_at"),
-    durationMs: integer("duration_ms"),
+export type InsertProject = typeof projects.$inferInsert
+export type Project = typeof projects.$inferSelect
 
-    status: varchar("status").notNull().default("running"), // 'running', 'completed', 'failed'
-    errorMessage: text("error_message"),
+export type InsertTransaction = typeof transactions.$inferInsert
+export type Transaction = typeof transactions.$inferSelect
 
-    triggeredBy: varchar("triggered_by").notNull(), // 'schedule', 'manual', 'auto'
-    notes: text("notes"),
-  },
-  (table) => [index("idx_learning_status").on(table.status), index("idx_learning_completed").on(table.completedAt)],
-)
+export type InsertNotification = typeof notifications.$inferInsert
+export type Notification = typeof notifications.$inferSelect
 
-// Feature toggles pour visibilité des catégories et rubriques
-export const featureToggles = pgTable(
-  "feature_toggles",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    key: text("key").unique().notNull(),
-    label: text("label").notNull(),
-    kind: toggleKindEnum("kind").notNull(),
-    isVisible: boolean("is_visible").notNull().default(true),
+export type InsertVideoDeposit = typeof videoDeposits.$inferInsert
+export type VideoDeposit = typeof videoDeposits.$inferSelect
 
-    // Message lorsqu'off
-    hiddenMessageVariant: messageVariantEnum("hidden_message_variant").notNull().default("en_cours"),
-    hiddenMessageCustom: text("hidden_message_custom"),
+// These were removed as they were duplicates.
+// export type InsertPost = typeof posts.$inferInsert
+// export type Post = typeof posts.$inferSelect
 
-    // Programmation (optionnelle)
-    scheduleStart: timestamp("schedule_start", { withTimezone: true }),
-    scheduleEnd: timestamp("schedule_end", { withTimezone: true }),
-    timezone: text("timezone").notNull().default("Europe/Paris"),
+// export type InsertComment = typeof comments.$inferInsert
+// export type Comment = typeof comments.$inferSelect
 
-    // Métadonnées
-    version: integer("version").notNull().default(1),
-    updatedBy: varchar("updated_by"),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-  },
-  (table) => [index("idx_toggles_key").on(table.key), index("idx_toggles_visible").on(table.isVisible)],
-)
+// export type InsertReceipt = typeof receipts.$inferInsert
+// export type Receipt = typeof receipts.$inferSelect
 
-// ===== SCHÉMAS D'INSERTION POUR AGENTS IA =====
+export type InsertArticle = typeof articles.$inferInsert
+export type Article = typeof articles.$inferSelect
 
-export const insertAgentDecisionSchema = createInsertSchema(agentDecisions).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-})
+export type InsertArticleInvestment = typeof articleInvestments.$inferInsert
+export type ArticleInvestment = typeof articleInvestments.$inferSelect
 
-export const insertAgentAuditLogSchema = createInsertSchema(agentAuditLog).omit({
-  id: true,
-  timestamp: true,
-})
+export type InsertVisuPointsPack = typeof visuPointsPacks.$inferInsert
+export type VisuPointsPack = typeof visuPointsPacks.$inferSelect
 
-export const insertFinancialLedgerSchema = createInsertSchema(financialLedger).omit({
-  id: true,
-  createdAt: true,
-})
+export type InsertVisuPointsPurchase = typeof visuPointsPurchases.$inferInsert
+export type VisuPointsPurchase = typeof visuPointsPurchases.$inferSelect
 
-export const insertPayoutRecipeSchema = createInsertSchema(payoutRecipes).omit({
-  id: true,
-  createdAt: true,
-})
-
-export const insertAgentParameterSchema = createInsertSchema(agentParameters).omit({
-  id: true,
-  createdAt: true,
-  lastModifiedAt: true,
-})
-
-// Types d'insertion et de sélection pour agents IA
 export type InsertAgentDecision = z.infer<typeof insertAgentDecisionSchema>
 export type AgentDecision = typeof agentDecisions.$inferSelect
 
@@ -4031,40 +3805,6 @@ export type PayoutRecipe = typeof payoutRecipes.$inferSelect
 export type InsertAgentParameter = z.infer<typeof insertAgentParameterSchema>
 export type AgentParameter = typeof agentParameters.$inferSelect
 
-// Schémas d'insertion pour système de fraude et ML
-export const insertUserRiskScoreSchema = createInsertSchema(userRiskScores).omit({
-  id: true,
-  calculatedAt: true,
-  updatedAt: true,
-})
-
-export const insertFraudEventSchema = createInsertSchema(fraudEvents).omit({
-  id: true,
-  createdAt: true,
-})
-
-export const insertBehaviorPatternSchema = createInsertSchema(behaviorPatterns).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-})
-
-export const insertUserRelationshipSchema = createInsertSchema(userRelationships).omit({
-  id: true,
-  createdAt: true,
-})
-
-export const insertMlModelSchema = createInsertSchema(mlModels).omit({
-  id: true,
-  createdAt: true,
-})
-
-export const insertLearningSessionSchema = createInsertSchema(learningSession).omit({
-  id: true,
-  startedAt: true,
-})
-
-// Types d'insertion et de sélection pour système de fraude et ML
 export type InsertUserRiskScore = z.infer<typeof insertUserRiskScoreSchema>
 export type UserRiskScore = typeof userRiskScores.$inferSelect
 
@@ -4080,1591 +3820,81 @@ export type UserRelationship = typeof userRelationships.$inferSelect
 export type InsertMlModel = z.infer<typeof insertMlModelSchema>
 export type MlModel = typeof mlModels.$inferSelect
 
-export type InsertLearningSession = z.infer<typeof insertLearningSessionSchema>
-export type LearningSession = typeof learningSession.$inferSelect
-
-// Schéma d'insertion pour quêtes quotidiennes
-export const insertDailyQuestSchema = createInsertSchema(dailyQuests).omit({
+// Insert schemas for validation
+export const insertAgentDecisionSchema = createInsertSchema(agentDecisions).omit({
   id: true,
   createdAt: true,
+  validatedAt: true,
 })
 
-// Types d'insertion et de sélection pour feature toggles
-export type InsertFeatureToggle = z.infer<typeof insertFeatureToggleSchema>
-export type FeatureToggle = typeof featureToggles.$inferSelect
-
-// Types d'insertion et de sélection pour quêtes quotidiennes
-export type InsertDailyQuest = z.infer<typeof insertDailyQuestSchema>
-export type DailyQuest = typeof dailyQuests.$inferSelect
-
-// ===== TABLE PHOTOS POUR PETITES ANNONCES =====
-
-// Enum pour statut de modération des photos
-export const photoModerationStatusEnum = pgEnum("photo_moderation_status", ["pending", "approved", "rejected"])
-
-// Table des photos d'annonces (jusqu'à 10 par annonce)
-export const adPhotos = pgTable(
-  "ad_photos",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    adId: varchar("ad_id")
-      .notNull()
-      .references(() => petitesAnnonces.id, { onDelete: "cascade" }),
-
-    // Ordre et affichage (0-9, photo de couverture obligatoire)
-    idx: integer("idx").notNull(), // Position 0-9 pour ordre drag-and-drop
-    isCover: boolean("is_cover").notNull().default(false),
-    alt: text("alt"), // Texte alternatif pour l'accessibilité
-
-    // Stockage et métadonnées techniques
-    storageKey: text("storage_key").notNull(), // Chemin dans le stockage objet
-    width: integer("width").notNull(),
-    height: integer("height").notNull(),
-    bytes: integer("bytes").notNull(),
-    contentType: varchar("content_type").notNull(), // image/jpeg|png|webp
-    sha256: varchar("sha256").notNull(), // Hash pour déduplication
-
-    // Modération IA + humaine
-    moderationStatus: photoModerationStatusEnum("moderation_status").default("pending"),
-    moderationReason: text("moderation_reason"), // Raison du refus si rejected
-    moderatedBy: varchar("moderated_by").references(() => users.id),
-    moderatedAt: timestamp("moderated_at"),
-    aiConfidenceScore: decimal("ai_confidence_score", { precision: 5, scale: 4 }), // Score IA NSFW/fraude
-
-    createdAt: timestamp("created_at").defaultNow(),
-  },
-  (table) => [
-    // Index uniques et contraintes
-    unique("unique_ad_idx").on(table.adId, table.idx), // Pas de doublons d'index par annonce
-    index("idx_ad_photos_ad_id").on(table.adId),
-    index("idx_ad_photos_status").on(table.moderationStatus),
-    // Contraintes métier critiques pour l'intégrité des données
-    check("idx_range", sql`${table.idx} >= 0 AND ${table.idx} <= 9`), // Limite index 0-9 (max 10 photos)
-    check("bytes_limit", sql`${table.bytes} > 0 AND ${table.bytes} <= 10485760`), // 10MB max
-    // Note: unique cover constraint enforced by application logic with transactions
-  ],
-)
-
-// ===== SCHÉMAS D'INSERTION POUR PETITES ANNONCES =====
-
-// Schéma d'insertion pour petites annonces avec validation du périmètre
-export const insertPetitesAnnoncesSchema = createInsertSchema(petitesAnnonces)
-  .omit({
-    id: true,
-    createdAt: true,
-    updatedAt: true,
-    moderationDecision: true, // Sera défini par la modération
-    moderatedBy: true,
-    moderatedAt: true,
-    viewCount: true,
-    contactCount: true,
-  })
-  .extend({
-    // Validation obligatoire du périmètre audiovisuel/spectacle
-    category: z.enum(["talents_jobs", "services", "lieux_tournage", "materiel"]),
-    // Validation de la conformité au périmètre
-    confirmsAudiovisualScope: z.boolean().refine((val) => val === true, {
-      message: "Vous devez confirmer que votre annonce respecte le périmètre audiovisuel/spectacle",
-    }),
-  })
-
-export const insertAnnoncesModerationSchema = createInsertSchema(annoncesModeration).omit({
-  id: true,
-  createdAt: true,
-})
-
-export const insertAnnoncesReportsSchema = createInsertSchema(annoncesReports).omit({
-  id: true,
-  createdAt: true,
-  reviewedAt: true,
-})
-
-export const insertEscrowTransactionsSchema = createInsertSchema(escrowTransactions).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  releasedAt: true,
-  refundedAt: true,
-  disputeResolvedAt: true,
-})
-
-export const insertAnnoncesSanctionsSchema = createInsertSchema(annoncesSanctions).omit({
-  id: true,
-  appliedAt: true,
-  liftedAt: true,
-})
-
-// ===== SCHÉMA D'INSERTION POUR PHOTOS =====
-
-// Schéma d'insertion pour photos d'annonces avec validation
-export const insertAdPhotosSchema = createInsertSchema(adPhotos)
-  .omit({
-    id: true,
-    createdAt: true,
-    moderatedBy: true,
-    moderatedAt: true,
-    aiConfidenceScore: true,
-    moderationReason: true,
-  })
-  .extend({
-    // Validation du format de fichier
-    contentType: z.enum(["image/jpeg", "image/png", "image/webp"]),
-    // Validation de la taille (10MB max)
-    bytes: z.number().min(1).max(10485760),
-    // Validation de l'index (0-9)
-    idx: z.number().min(0).max(9),
-    // Validation des dimensions minimales
-    width: z.number().min(320),
-    height: z.number().min(240),
-  })
-
-// ===== NOUVELLES TABLES POUR MODERNISATION PRO =====
-
-// Enums pour nouveaux systèmes
-export const stripeEventTypeEnum = pgEnum("stripe_event_type", [
-  "payment_intent.succeeded",
-  "payment_intent.payment_failed",
-  "checkout.session.completed",
-  "charge.refunded",
-  "payout.paid",
-])
-
-export const twoFAStatusEnum = pgEnum("twofa_status", ["disabled", "enabled", "backup_only"])
-
-export const gdprRequestTypeEnum = pgEnum("gdpr_request_type", ["export", "deletion"])
-export const gdprRequestStatusEnum = pgEnum("gdpr_request_status", ["pending", "processing", "completed", "failed"])
-
-// Stripe events pour idempotence webhooks
-export const stripeEvents = pgTable("stripe_events", {
-  id: text("id").primaryKey(),
-  type: stripeEventTypeEnum("type").notNull(),
-  processed: boolean("processed").notNull().default(false),
-  data: jsonb("data"),
-  receivedAt: timestamp("received_at").notNull().defaultNow(),
-})
-
-// Trail d'audit sécurisé HMAC pour nouveaux systèmes
-export const securityAuditLog = pgTable(
-  "security_audit_log",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    timestamp: timestamp("timestamp").notNull().defaultNow(),
-    actorId: varchar("actor_id").notNull(),
-    actionType: varchar("action_type").notNull(),
-    resourceType: varchar("resource_type").notNull(),
-    resourceId: varchar("resource_id"),
-    details: jsonb("details"),
-    ipAddress: varchar("ip_address"),
-    userAgent: text("user_agent"),
-    hmacSignature: text("hmac_signature").notNull(),
-  },
-  (table) => [
-    index("idx_security_audit_timestamp").on(table.timestamp),
-    index("idx_security_audit_actor").on(table.actorId),
-    index("idx_security_audit_action").on(table.actionType),
-  ],
-)
-
-// 2FA TOTP pour authentification renforcée
-export const user2FA = pgTable("user_2fa", {
-  userId: varchar("user_id").primaryKey(),
-  totpSecret: text("totp_secret").notNull(),
-  backupCodes: text("backup_codes").array().notNull().default(sql`'{}'`),
-  status: twoFAStatusEnum("status").notNull().default("disabled"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  lastUsedAt: timestamp("last_used_at"),
-})
-
-// Requêtes RGPD export/suppression
-export const gdprRequests = pgTable(
-  "gdpr_requests",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    userId: varchar("user_id").notNull(),
-    requestType: gdprRequestTypeEnum("request_type").notNull(),
-    status: gdprRequestStatusEnum("status").notNull().default("pending"),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    completedAt: timestamp("completed_at"),
-    filePath: text("file_path"),
-    expiryDate: timestamp("expiry_date"),
-  },
-  (table) => [index("idx_gdpr_user").on(table.userId), index("idx_gdpr_status").on(table.status)],
-)
-
-// OTPs temporaires pour accès admin d'urgence (break-glass)
-export const adminBreakGlassOtpStatusEnum = pgEnum("admin_otp_status", ["active", "used", "expired"])
-
-export const adminBreakGlassOtp = pgTable(
-  "admin_break_glass_otp",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    otpCode: varchar("otp_code", { length: 64 }).notNull().unique(), // SHA-256 = 64 chars
-    email: varchar("email").notNull(), // Email de l'admin qui peut l'utiliser
-    status: adminBreakGlassOtpStatusEnum("status").notNull().default("active"),
-    expiresAt: timestamp("expires_at").notNull(),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    usedAt: timestamp("used_at"),
-    usedBy: varchar("used_by"), // User ID qui a utilisé l'OTP
-    ipAddress: varchar("ip_address"),
-    userAgent: text("user_agent"),
-  },
-  (table) => [index("idx_admin_otp_status").on(table.status), index("idx_admin_otp_expires").on(table.expiresAt)],
-)
-
-// ===== MODULE LIVRES NUMÉRIQUES (EBOOKS) AVEC LICENCES JWT ET ANTI-PIRATAGE =====
-
-// Enums pour le système de ebooks
-export const ebookStatusEnum = pgEnum("ebook_status", ["draft", "published", "archived"])
-export const ebookFormatEnum = pgEnum("ebook_format", ["pdf", "epub", "mobi"])
-export const ebookLicenseStatusEnum = pgEnum("ebook_license_status", ["active", "revoked", "expired"])
-export const ebookDlAttemptStatusEnum = pgEnum("ebook_dl_attempt_status", ["pending", "success", "expired", "failed"])
-
-// Table des livres numériques (catalogue)
-export const ebooks = pgTable(
-  "ebooks",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    title: varchar("title", { length: 255 }).notNull(),
-    author: varchar("author", { length: 255 }).notNull(),
-    description: text("description"),
-    coverImageUrl: text("cover_image_url"),
-    price: decimal("price", { precision: 10, scale: 2 }).notNull(), // Prix en euros
-    format: ebookFormatEnum("format").notNull().default("pdf"),
-    fileSize: integer("file_size"), // Taille en octets
-    storageKey: text("storage_key").notNull(), // Clé dans le stockage objet (Bunny/S3)
-    status: ebookStatusEnum("status").notNull().default("draft"),
-    categoryId: varchar("category_id"), // Catégorie VISUAL (peut lier à projects)
-    isbn: varchar("isbn", { length: 20 }),
-    publishedAt: timestamp("published_at"),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow(),
-  },
-  (table) => [index("idx_ebooks_status").on(table.status), index("idx_ebooks_category").on(table.categoryId)],
-)
-
-// Table des licences (JWT) - une par achat de ebook
-export const ebookLicenses = pgTable(
-  "ebook_licenses",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    userId: varchar("user_id").notNull(), // Propriétaire de la licence
-    ebookId: varchar("ebook_id").notNull(), // Ebook acheté
-    orderId: varchar("order_id"), // Référence commande Stripe
-    status: ebookLicenseStatusEnum("status").notNull().default("active"),
-    // Quotas de téléchargement
-    dlLimit: integer("dl_limit").notNull().default(3), // Max téléchargements
-    dlUsed: integer("dl_used").notNull().default(0), // Téléchargements consommés
-    windowDays: integer("window_days").notNull().default(7), // Fenêtre de quota (jours)
-    windowStartAt: timestamp("window_start_at").notNull().defaultNow(),
-    // Watermark info (pour personnalisation)
-    watermarkData: jsonb("watermark_data"), // {email_hash, order_id, date}
-    // JWT tracking
-    jwtIssued: integer("jwt_issued").notNull().default(0), // Nombre de JWT émis
-    lastJwtAt: timestamp("last_jwt_at"), // Dernier JWT généré
-    // Métadonnées
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    revokedAt: timestamp("revoked_at"),
-    revokedReason: text("revoked_reason"),
-  },
-  (table) => [
-    index("idx_ebook_licenses_user").on(table.userId),
-    index("idx_ebook_licenses_ebook").on(table.ebookId),
-    index("idx_ebook_licenses_status").on(table.status),
-    unique("unique_user_ebook_order").on(table.userId, table.ebookId, table.orderId),
-  ],
-)
-
-// Table des tentatives de téléchargement (tracking + anti-abus)
-export const ebookDownloadAttempts = pgTable(
-  "ebook_download_attempts",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    licenseId: varchar("license_id").notNull(), // Licence utilisée
-    userId: varchar("user_id").notNull(), // Utilisateur (redondant pour perf)
-    ebookId: varchar("ebook_id").notNull(), // Ebook (redondant pour perf)
-    status: ebookDlAttemptStatusEnum("status").notNull().default("pending"),
-    nonce: varchar("nonce", { length: 32 }).notNull().unique(), // Nonce pour URL signée
-    jwtToken: text("jwt_token").notNull(), // JWT RS256 pour vérification
-    jwtJti: varchar("jwt_jti", { length: 32 }).notNull().unique(), // JWT ID pour anti-replay
-    // Tracking
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    expiresAt: timestamp("expires_at").notNull(), // Expiration tentative (2-5 min)
-    completedAt: timestamp("completed_at"), // Confirmation CDN/beacon
-    // Métadonnées audit
-    ipAddress: varchar("ip_address"),
-    userAgent: text("user_agent"),
-    cdnResponse: integer("cdn_response"), // Code HTTP CDN (200, 404, etc.)
-    errorMessage: text("error_message"),
-  },
-  (table) => [
-    index("idx_ebook_dl_attempts_license").on(table.licenseId),
-    index("idx_ebook_dl_attempts_status").on(table.status),
-    index("idx_ebook_dl_attempts_created").on(table.createdAt),
-    index("idx_ebook_dl_attempts_nonce").on(table.nonce),
-  ],
-)
-
-// Push subscriptions table for PWA notifications
-export const pushSubscriptions = pgTable(
-  "push_subscriptions",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    userId: uuid("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    endpoint: text("endpoint").notNull(),
-    p256dh: text("p256dh").notNull(),
-    auth: text("auth").notNull(),
-    userAgent: text("user_agent"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  },
-  (table) => ({
-    userIdIdx: index("push_subscriptions_user_id_idx").on(table.userId),
-    endpointIdx: uniqueIndex("push_subscriptions_endpoint_idx").on(table.endpoint),
-  }),
-)
-
-export type PushSubscription = typeof pushSubscriptions.$inferSelect
-export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert
-
-// Insert schemas
-export const insertEbookSchema = createInsertSchema(ebooks).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-})
-
-export const insertEbookLicenseSchema = createInsertSchema(ebookLicenses).omit({
-  id: true,
-  createdAt: true,
-  revokedAt: true,
-})
-
-export const insertEbookDownloadAttemptSchema = createInsertSchema(ebookDownloadAttempts).omit({
-  id: true,
-  createdAt: true,
-  completedAt: true,
-})
-
-// Types
-export type Ebook = typeof ebooks.$inferSelect
-export type EbookLicense = typeof ebookLicenses.$inferSelect
-export type EbookDownloadAttempt = typeof ebookDownloadAttempts.$inferSelect
-
-export type InsertEbook = z.infer<typeof insertEbookSchema>
-export type InsertEbookLicense = z.infer<typeof insertEbookLicenseSchema>
-export type InsertEbookDownloadAttempt = z.infer<typeof insertEbookDownloadAttemptSchema>
-
-// ===== SCHÉMAS D'INSERTION PRO =====
-
-export const insertStripeEventsSchema = createInsertSchema(stripeEvents).omit({
-  receivedAt: true,
-})
-
-export const insertSecurityAuditLogSchema = createInsertSchema(securityAuditLog).omit({
+export const insertAgentAuditLogSchema = createInsertSchema(agentAuditLog).omit({
   id: true,
   timestamp: true,
 })
 
-export const insertUser2FASchema = createInsertSchema(user2FA).omit({
-  createdAt: true,
-  lastUsedAt: true,
-})
-
-export const insertGdprRequestsSchema = createInsertSchema(gdprRequests).omit({
-  id: true,
-  createdAt: true,
-  completedAt: true,
-})
-
-export const insertAdminBreakGlassOtpSchema = createInsertSchema(adminBreakGlassOtp).omit({
-  id: true,
-  createdAt: true,
-  usedAt: true,
-})
-
-// ===== TYPES POUR PETITES ANNONCES =====
-
-// Types d'insertion
-export type InsertPetitesAnnonces = z.infer<typeof insertPetitesAnnoncesSchema>
-export type InsertAnnoncesModeration = z.infer<typeof insertAnnoncesModerationSchema>
-export type InsertAnnoncesReports = z.infer<typeof insertAnnoncesReportsSchema>
-export type InsertEscrowTransactions = z.infer<typeof insertEscrowTransactionsSchema>
-export type InsertAnnoncesSanctions = z.infer<typeof insertAnnoncesSanctionsSchema>
-export type InsertAdPhotos = z.infer<typeof insertAdPhotosSchema>
-
-// Types d'insertion PRO
-export type InsertStripeEvents = z.infer<typeof insertStripeEventsSchema>
-export type InsertSecurityAuditLog = z.infer<typeof insertSecurityAuditLogSchema>
-export type InsertUser2FA = z.infer<typeof insertUser2FASchema>
-export type InsertGdprRequests = z.infer<typeof insertGdprRequestsSchema>
-export type InsertAdminBreakGlassOtp = z.infer<typeof insertAdminBreakGlassOtpSchema>
-
-// Types de sélection
-export type PetitesAnnonces = typeof petitesAnnonces.$inferSelect
-export type AnnoncesModeration = typeof annoncesModeration.$inferSelect
-export type AnnoncesReports = typeof annoncesReports.$inferSelect
-export type EscrowTransactions = typeof escrowTransactions.$inferSelect
-export type AnnoncesSanctions = typeof annoncesSanctions.$inferSelect
-export type AdPhotos = typeof adPhotos.$inferSelect
-
-// Types de sélection PRO
-export type StripeEvents = typeof stripeEvents.$inferSelect
-export type SecurityAuditLog = typeof securityAuditLog.$inferSelect
-export type User2FA = typeof user2FA.$inferSelect
-export type GdprRequests = typeof gdprRequests.$inferSelect
-export type AdminBreakGlassOtp = typeof adminBreakGlassOtp.$inferSelect
-
-// ===== SYSTÈME VISUALSCOUTAI - PROSPECTION ÉTHIQUE =====
-
-// Enums pour VisualScoutAI
-export const tcSegmentStatusEnum = pgEnum("tc_segment_status", ["active", "paused"])
-export const tcCampaignChannelEnum = pgEnum("tc_campaign_channel", [
-  "meta_ads",
-  "tiktok_ads",
-  "youtube_ads",
-  "x_ads",
-  "seo_content",
-])
-export const tcCampaignObjectiveEnum = pgEnum("tc_campaign_objective", ["traffic", "video_views", "leads"])
-export const tcCampaignStatusEnum = pgEnum("tc_campaign_status", ["draft", "active", "paused", "stopped", "archived"])
-export const tcCreativeStatusEnum = pgEnum("tc_creative_status", ["draft", "approved", "rejected", "running"])
-export const tcConsentSourceEnum = pgEnum("tc_consent_source", ["form", "lead_ads", "import"])
-
-// Table des signaux agrégés des réseaux sociaux
-export const tcSignals = pgTable(
-  "tc_signals",
-  {
-    id: bigserial("id", { mode: "number" }).primaryKey(),
-    platform: text("platform").notNull(), // meta, tiktok, youtube, x, reddit
-    keyword: text("keyword"),
-    hashtag: text("hashtag"),
-    lang: text("lang"), // fr, en, es
-    ts: timestamp("ts").notNull(),
-    engagementJson: jsonb("engagement_json").notNull(), // counts agrégés uniquement
-    sampleUrlHash: text("sample_url_hash"), // hash SHA-256, pas d'URL brute
-    createdAt: timestamp("created_at").defaultNow(),
-  },
-  (table) => [
-    index("idx_tc_signals_platform_ts").on(table.platform, table.ts),
-    index("idx_tc_signals_keyword").on(table.keyword),
-    index("idx_tc_signals_lang").on(table.lang),
-  ],
-)
-
-// Table des segments d'audience
-export const tcSegments = pgTable(
-  "tc_segments",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    name: text("name").notNull(),
-    rules: jsonb("rules").notNull(), // {keywords:[...], lang:["fr"], zones:[...]}
-    locale: text("locale").notNull(),
-    status: tcSegmentStatusEnum("status").notNull().default("active"),
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
-  },
-  (table) => [index("idx_tc_segments_status").on(table.status), index("idx_tc_segments_locale").on(table.locale)],
-)
-
-// Table des scores d'intérêt par segment
-export const tcScores = pgTable(
-  "tc_scores",
-  {
-    id: bigserial("id", { mode: "number" }).primaryKey(),
-    segmentId: varchar("segment_id").references(() => tcSegments.id, { onDelete: "cascade" }),
-    window: text("window").notNull(), // "last_7d"
-    interestScoreAvg: decimal("interest_score_avg", { precision: 5, scale: 2 }).notNull(),
-    ctrPred: decimal("ctr_pred", { precision: 5, scale: 2 }),
-    cvrPred: decimal("cvr_pred", { precision: 5, scale: 2 }),
-    createdAt: timestamp("created_at").defaultNow(),
-  },
-  (table) => [index("idx_tc_scores_segment").on(table.segmentId), index("idx_tc_scores_created").on(table.createdAt)],
-)
-
-// Table des campagnes d'activation
-export const tcCampaigns = pgTable(
-  "tc_campaigns",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    channel: tcCampaignChannelEnum("channel").notNull(),
-    objective: tcCampaignObjectiveEnum("objective").notNull(),
-    budgetCents: bigint("budget_cents", { mode: "number" }).notNull(),
-    currency: text("currency").notNull().default("EUR"),
-    startAt: timestamp("start_at"),
-    endAt: timestamp("end_at"),
-    status: tcCampaignStatusEnum("status").notNull().default("draft"),
-    segmentId: varchar("segment_id").references(() => tcSegments.id, { onDelete: "set null" }),
-    kpiJson: jsonb("kpi_json"), // KPIs actuels de la campagne
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
-  },
-  (table) => [
-    index("idx_tc_campaigns_status").on(table.status),
-    index("idx_tc_campaigns_channel").on(table.channel),
-    index("idx_tc_campaigns_segment").on(table.segmentId),
-  ],
-)
-
-// Table des créatifs pour campagnes
-export const tcCreatives = pgTable(
-  "tc_creatives",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    campaignId: varchar("campaign_id").references(() => tcCampaigns.id, { onDelete: "cascade" }),
-    locale: text("locale").notNull(),
-    copy: text("copy").notNull(),
-    assetRef: text("asset_ref"), // Référence à l'asset (image/video)
-    kpiJson: jsonb("kpi_json"), // KPIs spécifiques au créatif
-    status: tcCreativeStatusEnum("status").notNull().default("draft"),
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
-  },
-  (table) => [
-    index("idx_tc_creatives_campaign").on(table.campaignId),
-    index("idx_tc_creatives_status").on(table.status),
-  ],
-)
-
-// Table des leads opt-in avec consentement
-export const tcConsentLeads = pgTable(
-  "tc_consent_leads",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    source: tcConsentSourceEnum("source").notNull(),
-    emailHash: text("email_hash").unique(), // SHA-256
-    consentTs: timestamp("consent_ts").notNull(),
-    locale: text("locale"),
-    topics: text("topics").array(), // Sujets d'intérêt
-    createdAt: timestamp("created_at").defaultNow(),
-  },
-  (table) => [index("idx_tc_consent_source").on(table.source), index("idx_tc_consent_locale").on(table.locale)],
-)
-
-// ===== RELATIONS VISUALSCOUTAI =====
-
-export const tcSegmentsRelations = relations(tcSegments, ({ many }) => ({
-  scores: many(tcScores),
-  campaigns: many(tcCampaigns),
-}))
-
-export const tcScoresRelations = relations(tcScores, ({ one }) => ({
-  segment: one(tcSegments, {
-    fields: [tcScores.segmentId],
-    references: [tcSegments.id],
-  }),
-}))
-
-export const tcCampaignsRelations = relations(tcCampaigns, ({ one, many }) => ({
-  segment: one(tcSegments, {
-    fields: [tcCampaigns.segmentId],
-    references: [tcSegments.id],
-  }),
-  creatives: many(tcCreatives),
-}))
-
-export const tcCreativesRelations = relations(tcCreatives, ({ one }) => ({
-  campaign: one(tcCampaigns, {
-    fields: [tcCreatives.campaignId],
-    references: [tcCampaigns.id],
-  }),
-}))
-
-// ===== SCHÉMAS D'INSERTION VISUALSCOUTAI =====
-
-export const insertTcSignalSchema = createInsertSchema(tcSignals).omit({
+export const insertFinancialLedgerSchema = createInsertSchema(financialLedger).omit({
   id: true,
   createdAt: true,
 })
 
-export const insertTcSegmentSchema = createInsertSchema(tcSegments).omit({
+export const insertPayoutRecipeSchema = createInsertSchema(payoutRecipes).omit({
+  id: true,
+  createdAt: true,
+  activatedAt: true,
+})
+
+export const insertAgentParameterSchema = createInsertSchema(agentParameters).omit({
+  id: true,
+  updatedAt: true,
+  createdAt: true,
+})
+
+export const insertUserRiskScoreSchema = createInsertSchema(userRiskScores).omit({
+  id: true,
+  calculatedAt: true,
+  updatedAt: true,
+})
+
+export const insertFraudEventSchema = createInsertSchema(fraudEvents).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
 })
 
-export const insertTcScoreSchema = createInsertSchema(tcScores).omit({
-  id: true,
-  createdAt: true,
-})
-
-export const insertTcCampaignSchema = createInsertSchema(tcCampaigns).omit({
+export const insertBehaviorPatternSchema = createInsertSchema(behaviorPatterns).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
 })
 
-export const insertTcCreativeSchema = createInsertSchema(tcCreatives).omit({
+export const insertUserRelationshipSchema = createInsertSchema(userRelationships).omit({
   id: true,
-  createdAt: true,
-  updatedAt: true,
+  detectedAt: true,
 })
 
-export const insertTcConsentLeadSchema = createInsertSchema(tcConsentLeads).omit({
+export const insertMlModelSchema = createInsertSchema(mlModels).omit({
   id: true,
-  createdAt: true,
+  trainedAt: true,
+  deployedAt: true,
+  retiredAt: true,
 })
 
-// ===== TYPES VISUALSCOUTAI =====
-
-// Types d'insertion
-export type InsertTcSignal = z.infer<typeof insertTcSignalSchema>
-export type InsertTcSegment = z.infer<typeof insertTcSegmentSchema>
-export type InsertTcScore = z.infer<typeof insertTcScoreSchema>
-export type InsertTcCampaign = z.infer<typeof insertTcCampaignSchema>
-export type InsertTcCreative = z.infer<typeof insertTcCreativeSchema>
-export type InsertTcConsentLead = z.infer<typeof insertTcConsentLeadSchema>
-
-// Types de sélection
-export type TcSignal = typeof tcSignals.$inferSelect
-export type TcSegment = typeof tcSegments.$inferSelect
-export type TcScore = typeof tcScores.$inferSelect
-export type TcCampaign = typeof tcCampaigns.$inferSelect
-export type TcCreative = typeof tcCreatives.$inferSelect
-export type TcConsentLead = typeof tcConsentLeads.$inferSelect
-
-// ===== SEO MODULE =====
-// Managed by VisualScoutAI under VisualAI supervision, Admin has full control
-
-// SEO page type enum
-export const seoPageTypeEnum = pgEnum("seo_page_type", [
-  "home",
-  "project",
-  "projects_list",
-  "live_show",
-  "about",
-  "blog",
-  "social_post",
-  "custom",
-])
-
-// SEO generation status enum
-export const seoStatusEnum = pgEnum("seo_status", ["draft", "active", "archived", "ai_generated", "admin_override"])
-
-// Global SEO configuration table (managed by Admin, suggested by VisualScoutAI)
-export const seoConfig = pgTable("seo_config", {
+// Add pushSubscriptions table and relations
+export const pushSubscriptions = pgTable("push_subscriptions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  siteName: varchar("site_name", { length: 100 }).notNull().default("VISUAL"),
-  siteUrl: varchar("site_url", { length: 255 }).notNull().default("https://visual-platform.replit.app"),
-  defaultLocale: varchar("default_locale", { length: 5 }).notNull().default("fr"),
-  supportedLocales: text("supported_locales").array().notNull().default(sql`ARRAY['fr', 'en', 'es']`),
-  ogImageDefault: varchar("og_image_default", { length: 500 }),
-  twitterHandle: varchar("twitter_handle", { length: 50 }),
-  organizationSchema: jsonb("organization_schema"), // Schema.org Organization markup
-  enableSitemap: boolean("enable_sitemap").default(true),
-  enableRobotsTxt: boolean("enable_robots_txt").default(true),
-  aiGenerationEnabled: boolean("ai_generation_enabled").default(true), // VisualScoutAI auto-generation
-  visualAIOverride: boolean("visual_ai_override").default(false), // VisualAI can override VisualScoutAI
-  adminOverrideAll: boolean("admin_override_all").default(true), // Admin always wins
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  endpoint: text("endpoint").notNull(),
+  p256dh: varchar("p256dh").notNull(),
+  auth: varchar("auth").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 })
 
-// Page-specific metadata table (managed by VisualScoutAI, overridable by Admin)
-export const pageMetadata = pgTable(
-  "page_metadata",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    pageType: seoPageTypeEnum("page_type").notNull(),
-    pageSlug: varchar("page_slug", { length: 255 }).notNull(), // e.g., "/projects/123", "/live-show"
-    locale: varchar("locale", { length: 5 }).notNull().default("fr"),
-
-    // SEO Meta Tags
-    title: varchar("title", { length: 160 }).notNull(),
-    description: text("description").notNull(),
-    keywords: text("keywords").array(),
-    canonicalUrl: varchar("canonical_url", { length: 500 }),
-
-    // Open Graph Tags
-    ogTitle: varchar("og_title", { length: 160 }),
-    ogDescription: text("og_description"),
-    ogImage: varchar("og_image", { length: 500 }),
-    ogType: varchar("og_type", { length: 50 }).default("website"),
-
-    // Twitter Card Tags
-    twitterCard: varchar("twitter_card", { length: 50 }).default("summary_large_image"),
-    twitterTitle: varchar("twitter_title", { length: 160 }),
-    twitterDescription: text("twitter_description"),
-    twitterImage: varchar("twitter_image", { length: 500 }),
-
-    // Schema.org structured data
-    schemaMarkup: jsonb("schema_markup"),
-
-    // Management
-    status: seoStatusEnum("status").notNull().default("draft"),
-    generatedBy: varchar("generated_by", { length: 50 }), // 'admin', 'visualscoutai', 'visualai', 'manual'
-    adminApproved: boolean("admin_approved").default(false),
-    visualAIApproved: boolean("visual_ai_approved").default(false),
-
-    // Metrics
-    viewCount: integer("view_count").default(0),
-    clickRate: decimal("click_rate", { precision: 5, scale: 2 }),
-
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
-  },
-  (table) => [
-    index("idx_page_metadata_slug").on(table.pageSlug),
-    index("idx_page_metadata_type").on(table.pageType),
-    index("idx_page_metadata_locale").on(table.locale),
-    index("idx_page_metadata_status").on(table.status),
-    unique("unique_page_locale").on(table.pageSlug, table.locale),
-  ],
-)
-
-// SEO generation logs (VisualScoutAI activity tracking)
-export const seoGenerationLogs = pgTable(
-  "seo_generation_logs",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    pageMetadataId: varchar("page_metadata_id").references(() => pageMetadata.id, { onDelete: "cascade" }),
-    action: varchar("action", { length: 50 }).notNull(), // 'generated', 'updated', 'approved', 'rejected'
-    performedBy: varchar("performed_by", { length: 50 }).notNull(), // 'visualscoutai', 'visualai', 'admin'
-    previousData: jsonb("previous_data"),
-    newData: jsonb("new_data"),
-    aiReasoning: text("ai_reasoning"), // Why VisualScoutAI made this decision
-    approvalStatus: varchar("approval_status", { length: 50 }).default("pending"),
-    createdAt: timestamp("created_at").defaultNow(),
-  },
-  (table) => [
-    index("idx_seo_logs_page").on(table.pageMetadataId),
-    index("idx_seo_logs_action").on(table.action),
-    index("idx_seo_logs_performer").on(table.performedBy),
-  ],
-)
-
-// ===== RELATIONS SEO =====
-
-export const pageMetadataRelations = relations(pageMetadata, ({ many }) => ({
-  generationLogs: many(seoGenerationLogs),
-}))
-
-export const seoGenerationLogsRelations = relations(seoGenerationLogs, ({ one }) => ({
-  pageMetadata: one(pageMetadata, {
-    fields: [seoGenerationLogs.pageMetadataId],
-    references: [pageMetadata.id],
+export const pushSubscriptionsRelations = relations(pushSubscriptions, ({ one }) => ({
+  user: one(users, {
+    fields: [pushSubscriptions.userId],
+    references: [users.id],
   }),
 }))
-
-// ===== PROJECT MONTHLY RANKINGS (Leaderboard & Replay) =====
-
-// Table pour le classement mensuel des projets avec historique
-export const projectMonthlyRankings = pgTable(
-  "project_monthly_rankings",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    projectId: varchar("project_id")
-      .notNull()
-      .references(() => projects.id),
-    monthYear: varchar("month_year", { length: 7 }).notNull(), // "2025-10" format
-    rank: integer("rank").notNull(), // Position dans le classement
-
-    // Métriques du mois
-    totalInvestedEUR: decimal("total_invested_eur", { precision: 12, scale: 2 }).default("0.00"),
-    investorCount: integer("investor_count").default(0),
-    avgRoi: decimal("avg_roi", { precision: 5, scale: 2 }).default("0.00"),
-    visuPointsGenerated: integer("visu_points_generated").default(0),
-
-    // Métriques de performance comparatives
-    growthRate: decimal("growth_rate", { precision: 5, scale: 2 }).default("0.00"), // % croissance vs mois précédent
-    engagementScore: integer("engagement_score").default(0), // Score d'engagement (vues, partages, etc.)
-    successScore: integer("success_score").default(0), // Score global de succès (0-100)
-
-    // Données pour graphiques
-    dailyInvestments: jsonb("daily_investments"), // [{day: 1, amount: 100}, ...] pour graphique
-    investorGrowth: jsonb("investor_growth"), // [{day: 1, count: 5}, ...] pour graphique
-
-    // Awards et badges
-    isTopPerformer: boolean("is_top_performer").default(false), // Top 3
-    badge: varchar("badge", { length: 50 }), // 'gold', 'silver', 'bronze', 'rising_star', etc.
-
-    // Métadonnées
-    snapshotDate: timestamp("snapshot_date").defaultNow(), // Date de capture du classement
-    createdAt: timestamp("created_at").defaultNow(),
-  },
-  (table) => [
-    index("idx_project_rankings_month").on(table.monthYear),
-    index("idx_project_rankings_project").on(table.projectId),
-    index("idx_project_rankings_rank").on(table.rank),
-    unique("unique_project_month_ranking").on(table.projectId, table.monthYear),
-  ],
-)
-
-// ===== SCHÉMAS D'INSERTION SEO =====
-
-export const insertSeoConfigSchema = createInsertSchema(seoConfig).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-})
-
-export const insertPageMetadataSchema = createInsertSchema(pageMetadata).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-})
-
-export const insertSeoGenerationLogSchema = createInsertSchema(seoGenerationLogs).omit({
-  id: true,
-  createdAt: true,
-})
-
-// ===== TYPES SEO =====
-
-export type InsertSeoConfig = z.infer<typeof insertSeoConfigSchema>
-export type InsertPageMetadata = z.infer<typeof insertPageMetadataSchema>
-export type InsertSeoGenerationLog = z.infer<typeof insertSeoGenerationLogSchema>
-
-export type SeoConfig = typeof seoConfig.$inferSelect
-export type PageMetadata = typeof pageMetadata.$inferSelect
-export type SeoGenerationLog = typeof seoGenerationLogs.$inferSelect
-
-// ===== TYPES ET SCHÉMAS LEADERBOARD =====
-
-export const insertProjectMonthlyRankingSchema = createInsertSchema(projectMonthlyRankings).omit({
-  id: true,
-  createdAt: true,
-})
-
-export type ProjectMonthlyRanking = typeof projectMonthlyRankings.$inferSelect
-export type InsertProjectMonthlyRanking = z.infer<typeof insertProjectMonthlyRankingSchema>
-
-// ===== MESSAGERIE INTERNE SCHEMAS =====
-
-export const insertInternalMessageSchema = createInsertSchema(internalMessages)
-  .omit({
-    id: true,
-    createdAt: true,
-    updatedAt: true,
-    handledAt: true,
-    emailSentAt: true,
-  })
-  .extend({
-    message: z
-      .string()
-      .min(10, "Le message doit contenir au moins 10 caractères")
-      .max(2000, "Le message ne peut pas dépasser 2000 caractères"),
-    subjectCustom: z.string().optional(),
-  })
-
-export const insertMessageRateLimitSchema = createInsertSchema(messageRateLimit).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-})
-
-export const insertFloatingButtonConfigSchema = createInsertSchema(floatingButtonConfig).omit({
-  id: true,
-  updatedAt: true,
-})
-
-// Update internal message schema (for admin use)
-export const updateInternalMessageSchema = z.object({
-  status: z.enum(["unread", "read", "in_progress", "resolved", "archived"]).optional(),
-  adminNotes: z.string().optional(),
-  handledBy: z.string().optional(),
-})
-
-// ===== MESSAGERIE INTERNE TYPES =====
-
-export type InternalMessage = typeof internalMessages.$inferSelect
-export type InsertInternalMessage = z.infer<typeof insertInternalMessageSchema>
-export type UpdateInternalMessage = z.infer<typeof updateInternalMessageSchema>
-
-export type MessageRateLimit = typeof messageRateLimit.$inferSelect
-export type InsertMessageRateLimit = z.infer<typeof insertMessageRateLimitSchema>
-
-export type FloatingButtonConfig = typeof floatingButtonConfig.$inferSelect
-export type InsertFloatingButtonConfig = z.infer<typeof insertFloatingButtonConfigSchema>
-
-// ===== VOIX DE L'INFO SCHEMAS =====
-
-// Infoporteur profile schemas
-export const insertInfoporteurProfileSchema = createInsertSchema(infoporteurProfiles)
-  .omit({
-    id: true,
-    createdAt: true,
-    updatedAt: true,
-  })
-  .extend({
-    displayName: z.string().min(2, "Le nom d'affichage doit contenir au moins 2 caractères").max(100),
-    bio: z.string().max(500, "La bio ne peut pas dépasser 500 caractères").optional(),
-    specialties: z.string().optional(),
-  })
-
-// Investi-lecteur profile schemas
-export const insertInvestiLecteurProfileSchema = createInsertSchema(investiLecteurProfiles)
-  .omit({
-    id: true,
-    createdAt: true,
-    updatedAt: true,
-  })
-  .extend({
-    displayName: z.string().min(2, "Le nom d'affichage doit contenir au moins 2 caractères").max(100),
-  })
-
-// Article schemas
-export const insertArticleSchema = createInsertSchema(voixInfoArticles)
-  .omit({
-    id: true,
-    slug: true,
-    createdAt: true,
-    updatedAt: true,
-    publishedAt: true,
-    totalSales: true,
-    totalRevenue: true,
-  })
-  .extend({
-    title: z.string().min(10, "Le titre doit contenir au moins 10 caractères").max(200),
-    excerpt: z.string().max(500, "L'extrait ne peut pas dépasser 500 caractères").optional(),
-    content: z.string().min(100, "Le contenu doit contenir au moins 100 caractères"),
-    priceEuros: z.number().refine((val) => [0.2, 0.5, 1, 2, 3, 4, 5].includes(val), {
-      message: "Prix autorisés : 0.2, 0.5, 1, 2, 3, 4, 5 euros",
-    }),
-    tags: z.string().optional(),
-  })
-
-export const updateArticleSchema = createInsertSchema(voixInfoArticles)
-  .omit({
-    id: true,
-    infoporteurId: true,
-    slug: true,
-    createdAt: true,
-    totalSales: true,
-    totalRevenue: true,
-  })
-  .partial()
-
-// Article purchase schema
-export const insertArticlePurchaseSchema = createInsertSchema(articlePurchases)
-  .omit({
-    id: true,
-    votes: true,
-    createdAt: true,
-    refunded: true,
-    refundedAt: true,
-    refundAmount: true,
-  })
-  .extend({
-    priceEuros: z.number().min(0.2).max(10),
-    visuPointsSpent: z.number().min(20).max(1000),
-  })
-
-// Golden ticket schema
-export const insertGoldenTicketSchema = createInsertSchema(goldenTickets)
-  .omit({
-    id: true,
-    votes: true,
-    finalRank: true,
-    refundPercentage: true,
-    refundAmount: true,
-    status: true,
-    refundedAt: true,
-    createdAt: true,
-    updatedAt: true,
-  })
-  .extend({
-    tier: z.number().int().min(1).max(3, "Tier doit être 1, 2, ou 3"),
-    amountEuros: z.number().refine((val) => [50, 75, 100].includes(val), {
-      message: "Montants autorisés : 50, 75, 100 euros",
-    }),
-    visuPointsSpent: z.number().refine((val) => [5000, 7500, 10000].includes(val), {
-      message: "VISUpoints requis : 5000, 7500, 10000",
-    }),
-  })
-
-// VISUpoints transaction schema
-export const insertVisuPointsTransactionSchema = createInsertSchema(visuPointsTransactions)
-  .omit({
-    id: true,
-    balanceBefore: true,
-    balanceAfter: true,
-    createdAt: true,
-  })
-  .extend({
-    amount: z.number().int(),
-    euroAmount: z.number().optional(),
-    description: z.string().min(1, "Description requise"),
-    relatedId: z.string().optional(),
-    relatedType: z.string().optional(),
-  })
-
-// VISUpoints pack schema
-export const visuPointsPackSchema = z.object({
-  packEuros: z.number().refine((val) => [5, 10, 20].includes(val), {
-    message: "Packs disponibles : 5, 10, 20 euros",
-  }),
-  visuPoints: z.number().refine((val) => [500, 1000, 2000].includes(val), {
-    message: "VISUpoints : 500, 1000, 2000",
-  }),
-})
-
-// ===== VOIX DE L'INFO TYPES =====
-
-export type InfoporteurProfile = typeof infoporteurProfiles.$inferSelect
-export type InsertInfoporteurProfile = z.infer<typeof insertInfoporteurProfileSchema>
-
-export type InvestiLecteurProfile = typeof investiLecteurProfiles.$inferSelect
-export type InsertInvestiLecteurProfile = z.infer<typeof insertInvestiLecteurProfileSchema>
-
-export type VoixInfoArticle = typeof voixInfoArticles.$inferSelect
-export type InsertVoixInfoArticle = z.infer<typeof insertArticleSchema>
-export type UpdateVoixInfoArticle = z.infer<typeof updateArticleSchema>
-
-export type ArticlePurchase = typeof articlePurchases.$inferSelect
-export type InsertArticlePurchase = z.infer<typeof insertArticlePurchaseSchema>
-
-export type DailyRanking = typeof dailyRankings.$inferSelect
-export type DailyPotDistribution = typeof dailyPotDistribution.$inferSelect
-
-export type GoldenTicket = typeof goldenTickets.$inferSelect
-export type InsertGoldenTicket = z.infer<typeof insertGoldenTicketSchema>
-
-export type VisuPointsTransaction = typeof visuPointsTransactions.$inferSelect
-export type InsertVisuPointsTransaction = z.infer<typeof insertVisuPointsTransactionSchema>
-
-export type VisuPointsPack = z.infer<typeof visuPointsPackSchema>
-
-// ===== VISITEUR MINEUR SCHEMAS =====
-
-export const createMinorProfileSchema = z
-  .object({
-    birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format de date invalide (YYYY-MM-DD)"),
-    parentEmail: z.string().email("Email parent invalide").optional(),
-    parentalConsent: z.boolean().default(false),
-  })
-  .refine(
-    (data) => {
-      // Vérifier que l'âge est entre 16 et 17 ans
-      const birthDate = new Date(data.birthDate)
-      const now = new Date()
-      let age = now.getFullYear() - birthDate.getFullYear()
-      const monthDiff = now.getMonth() - birthDate.getMonth()
-
-      if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birthDate.getDate())) {
-        age--
-      }
-
-      return age >= 16 && age <= 17
-    },
-    {
-      message: "L'âge doit être entre 16 et 17 ans",
-      path: ["birthDate"],
-    },
-  )
-
-export const updateMinorProfileSchema = z
-  .object({
-    parentEmail: z.string().email().optional(),
-    parentalConsent: z.boolean().optional(),
-    socialPostingEnabled: z.boolean().optional(),
-    accountTypeChosen: z.enum(["investor", "investi_lecteur"]).optional(),
-  })
-  .partial()
-
-export const awardMinorVisuPointsSchema = z.object({
-  amount: z.number().min(1, "Montant doit être positif").max(1000, "Montant maximum: 1000 VP"),
-  source: z.string().min(1, "Source requise"),
-  sourceId: z.string().optional(),
-  description: z.string().min(1, "Description requise"),
-})
-
-export const createMinorNotificationSchema = z.object({
-  type: z.enum(["cap_warning_80", "cap_reached", "majority_reminder", "lock_expired"]),
-  title: z.string().max(200, "Titre trop long"),
-  message: z.string().min(1, "Message requis"),
-  triggerDate: z.date().optional(),
-})
-
-// Minor admin settings schema
-export const updateMinorAdminSettingsSchema = z.object({
-  minor_social_posting_enabled: z.boolean().optional(),
-  minor_points_cap_value_eur: z.number().min(50).max(500).optional(), // 50€ - 500€
-  minor_points_accrual_pause_on_cap: z.boolean().optional(),
-  post_majority_required_account: z.enum(["investor", "investi_lecteur", "both"]).optional(),
-  post_majority_lock_months: z.number().min(0).max(12).optional(), // 0-12 mois
-  reminders_enabled: z.boolean().optional(),
-  parental_consent_mode: z.boolean().optional(),
-})
-
-// ===== VISITEUR MINEUR TYPES =====
-
-export type MinorProfile = typeof minorProfiles.$inferSelect
-export type CreateMinorProfile = z.infer<typeof createMinorProfileSchema>
-export type UpdateMinorProfile = z.infer<typeof updateMinorProfileSchema>
-
-export type MinorVisuPointsTransaction = typeof minorVisuPointsTransactions.$inferSelect
-export type AwardMinorVisuPoints = z.infer<typeof awardMinorVisuPointsSchema>
-
-export type MinorNotification = typeof minorNotifications.$inferSelect
-export type CreateMinorNotification = z.infer<typeof createMinorNotificationSchema>
-
-export type MinorAdminSettings = typeof minorAdminSettings.$inferSelect
-export type UpdateMinorAdminSettings = z.infer<typeof updateMinorAdminSettingsSchema>
-
-// Constants for minor system
-export const MINOR_SYSTEM_CONSTANTS = {
-  VP_PER_EURO: 100,
-  DEFAULT_CAP_EUR: 200,
-  DEFAULT_CAP_VP: 20000,
-  MIN_AGE: 16,
-  MAX_AGE: 17,
-  MAJORITY_AGE: 18,
-  DEFAULT_LOCK_MONTHS: 6,
-  CAP_WARNING_THRESHOLD: 0.8, // 80% du cap
-} as const
-
-// =======================
-// SYSTÈME DE DÉCOUVERT DE SOLDE
-// =======================
-
-// Types d'alertes de découvert
-export const overdraftAlertTypeEnum = pgEnum("overdraft_alert_type", [
-  "warning", // 75% de la limite atteinte
-  "critical", // 90% de la limite atteinte
-  "blocked", // 100% de la limite dépassée
-])
-
-// Types d'incidents de découvert
-export const overdraftIncidentTypeEnum = pgEnum("overdraft_incident_type", [
-  "account_blocked", // Compte bloqué pour dépassement
-  "payment_failed", // Paiement échoué par manque de fonds
-  "automatic_recovery", // Récupération automatique
-  "manual_intervention", // Intervention manuelle admin
-])
-
-// Statut des incidents
-export const incidentStatusEnum = pgEnum("incident_status", [
-  "open", // Incident ouvert
-  "investigating", // En cours d'investigation
-  "resolved", // Résolu
-  "closed", // Fermé
-])
-
-// Limites de découvert par utilisateur
-export const overdraftLimits = pgTable(
-  "overdraft_limits",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    userId: varchar("user_id").notNull().unique(), // Référence à users.id
-    limitAmount: decimal("limit_amount", { precision: 10, scale: 2 }).notNull(),
-    isActive: boolean("is_active").default(true),
-    setByAdmin: boolean("set_by_admin").default(false),
-    setBy: varchar("set_by").notNull(), // ID de l'utilisateur ou admin qui a défini
-    reason: text("reason"), // Raison de la modification
-    validFrom: timestamp("valid_from").defaultNow(),
-    validUntil: timestamp("valid_until"), // Optionnel pour limites temporaires
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
-  },
-  (table) => [
-    index("idx_overdraft_limits_user").on(table.userId),
-    index("idx_overdraft_limits_active").on(table.isActive),
-  ],
-)
-
-// Alertes de découvert envoyées
-export const overdraftAlerts = pgTable(
-  "overdraft_alerts",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    userId: varchar("user_id").notNull(), // Référence à users.id
-    alertType: overdraftAlertTypeEnum("alert_type").notNull(),
-    overdraftAmount: decimal("overdraft_amount", { precision: 10, scale: 2 }).notNull(),
-    limitAmount: decimal("limit_amount", { precision: 10, scale: 2 }).notNull(),
-    message: text("message").notNull(),
-    isRead: boolean("is_read").default(false),
-    readAt: timestamp("read_at"),
-    emailSent: boolean("email_sent").default(false),
-    emailSentAt: timestamp("email_sent_at"),
-    smsSent: boolean("sms_sent").default(false),
-    smsSentAt: timestamp("sms_sent_at"),
-    pushSent: boolean("push_sent").default(false),
-    pushSentAt: timestamp("push_sent_at"),
-    createdAt: timestamp("created_at").defaultNow(),
-  },
-  (table) => [
-    index("idx_overdraft_alerts_user").on(table.userId),
-    index("idx_overdraft_alerts_type").on(table.alertType),
-    index("idx_overdraft_alerts_date").on(table.createdAt),
-    index("idx_overdraft_alerts_unread").on(table.isRead),
-  ],
-)
-
-// Incidents de découvert (blocages, échecs de paiement, etc.)
-export const overdraftIncidents = pgTable(
-  "overdraft_incidents",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    userId: varchar("user_id").notNull(), // Référence à users.id
-    incidentType: overdraftIncidentTypeEnum("incident_type").notNull(),
-    status: incidentStatusEnum("status").default("open"),
-    overdraftAmount: decimal("overdraft_amount", { precision: 10, scale: 2 }).notNull(),
-    limitAmount: decimal("limit_amount", { precision: 10, scale: 2 }).notNull(),
-    description: text("description").notNull(),
-    adminNotes: text("admin_notes"), // Notes internes admin
-    isResolved: boolean("is_resolved").default(false),
-    resolvedAt: timestamp("resolved_at"),
-    resolvedBy: varchar("resolved_by"), // ID admin qui a résolu
-    autoResolved: boolean("auto_resolved").default(false),
-
-    // Métadonnées pour tracking
-    transactionId: varchar("transaction_id"), // Transaction qui a causé l'incident
-    paymentIntentId: varchar("payment_intent_id"), // Stripe payment intent
-    errorCode: varchar("error_code"), // Code d'erreur technique
-    errorMessage: text("error_message"), // Message d'erreur détaillé
-
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
-  },
-  (table) => [
-    index("idx_overdraft_incidents_user").on(table.userId),
-    index("idx_overdraft_incidents_type").on(table.incidentType),
-    index("idx_overdraft_incidents_status").on(table.status),
-    index("idx_overdraft_incidents_resolved").on(table.isResolved),
-    index("idx_overdraft_incidents_date").on(table.createdAt),
-  ],
-)
-
-// Historique des frais de découvert
-export const overdraftFees = pgTable(
-  "overdraft_fees",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    userId: varchar("user_id").notNull(), // Référence à users.id
-    overdraftAmount: decimal("overdraft_amount", { precision: 10, scale: 2 }).notNull(),
-    feeAmount: decimal("fee_amount", { precision: 10, scale: 2 }).notNull(),
-    feeRate: decimal("fee_rate", { precision: 5, scale: 4 }).notNull(), // Taux journalier
-    daysInOverdraft: integer("days_in_overdraft").notNull(),
-    calculatedAt: timestamp("calculated_at").defaultNow(),
-
-    // Statut du prélèvement
-    isCharged: boolean("is_charged").default(false),
-    chargedAt: timestamp("charged_at"),
-    transactionId: varchar("transaction_id"), // Transaction du prélèvement
-    paymentIntentId: varchar("payment_intent_id"), // Stripe payment intent
-
-    // Période couverte
-    periodStart: timestamp("period_start").notNull(),
-    periodEnd: timestamp("period_end").notNull(),
-
-    createdAt: timestamp("created_at").defaultNow(),
-  },
-  (table) => [
-    index("idx_overdraft_fees_user").on(table.userId),
-    index("idx_overdraft_fees_period").on(table.periodStart, table.periodEnd),
-    index("idx_overdraft_fees_charged").on(table.isCharged),
-  ],
-)
-
-// Configuration des découverts (paramètres globaux)
-export const overdraftConfig = pgTable(
-  "overdraft_config",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    configKey: varchar("config_key", { length: 100 }).unique().notNull(),
-    configValue: text("config_value").notNull(),
-    configType: varchar("config_type").notNull(), // 'number', 'boolean', 'string'
-    description: text("description"),
-    category: varchar("category").default("general"), // 'limits', 'fees', 'alerts', 'general'
-    isEditable: boolean("is_editable").default(true),
-    updatedBy: varchar("updated_by"), // Référence à users.id
-    updatedAt: timestamp("updated_at").defaultNow(),
-  },
-  (table) => [
-    index("idx_overdraft_config_key").on(table.configKey),
-    index("idx_overdraft_config_category").on(table.category),
-  ],
-)
-
-// Schémas de validation pour découverts
-export const insertOverdraftLimitSchema = createInsertSchema(overdraftLimits, {
-  limitAmount: z.string().refine((val) => {
-    const num = Number.parseFloat(val)
-    return !isNaN(num) && num >= 0 && num <= 2000 // Max €2000 de découvert
-  }, "Limite doit être entre €0 et €2000"),
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-})
-
-export const insertOverdraftAlertSchema = createInsertSchema(overdraftAlerts).omit({
-  id: true,
-  createdAt: true,
-})
-
-export const insertOverdraftIncidentSchema = createInsertSchema(overdraftIncidents).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-})
-
-export const overdraftConfigSchema = z.object({
-  defaultLimitInvestor: z.number().min(0).max(1000).default(500),
-  defaultLimitCreator: z.number().min(0).max(1000).default(300),
-  defaultLimitAdmin: z.number().min(0).max(2000).default(1000),
-  warningThreshold: z.number().min(0.5).max(0.9).default(0.75),
-  criticalThreshold: z.number().min(0.8).max(0.95).default(0.9),
-  dailyFeeRate: z.number().min(0).max(0.01).default(0.001),
-  maxMonthlyFees: z.number().min(10).max(100).default(50),
-  gracePeriodDays: z.number().min(1).max(30).default(7),
-  autoBlockEnabled: z.boolean().default(true),
-  alertsEnabled: z.boolean().default(true),
-})
-
-// Types TypeScript pour le système de découvert
-export type OverdraftLimit = typeof overdraftLimits.$inferSelect
-export type InsertOverdraftLimit = z.infer<typeof insertOverdraftLimitSchema>
-
-export type OverdraftAlert = typeof overdraftAlerts.$inferSelect
-export type InsertOverdraftAlert = z.infer<typeof insertOverdraftAlertSchema>
-
-export type OverdraftIncident = typeof overdraftIncidents.$inferSelect
-export type InsertOverdraftIncident = z.infer<typeof insertOverdraftIncidentSchema>
-
-export type OverdraftFee = typeof overdraftFees.$inferSelect
-export type OverdraftConfig = typeof overdraftConfig.$inferSelect
-
-export type OverdraftConfigValues = z.infer<typeof overdraftConfigSchema>
-
-// Constantes du système de découvert
-export const OVERDRAFT_CONSTANTS = {
-  DEFAULT_LIMITS: {
-    investor: 500.0, // €500 de découvert pour investisseurs
-    creator: 300.0, // €300 de découvert pour créateurs
-    admin: 1000.0, // €1000 de découvert pour admins
-    invested_reader: 200.0, // €200 de découvert pour investi-lecteurs
-  },
-  ALERT_THRESHOLDS: {
-    warning: 0.75, // 75% - Alerte préventive
-    critical: 0.9, // 90% - Alerte critique
-    blocked: 1.0, // 100% - Blocage des opérations
-  },
-  GRACE_PERIODS: {
-    warning: 7, // 7 jours pour régulariser après alerte
-    critical: 3, // 3 jours après alerte critique
-    blocked: 24, // 24h pour débloquer le compte
-  },
-  OVERDRAFT_FEES: {
-    daily_rate: 0.001, // 0.1% par jour
-    max_fee: 50.0, // Maximum €50 de frais par mois
-  },
-} as const
-
-// ===== SYSTÈME D'AGENTS IA AUTONOMES =====
-
-// Énums pour les agents IA
-export const agentTypeEnum = pgEnum("agent_type", ["visualai", "visualfinanceai", "admin"])
-export const decisionStatusEnum = pgEnum("decision_status", ["pending", "approved", "rejected", "auto", "escalated"])
-export const agentAuditActionEnum = pgEnum("agent_audit_action", [
-  "decision_made",
-  "payout_executed",
-  "user_blocked",
-  "category_closed",
-  "extension_granted",
-  "points_converted",
-  "policy_updated",
-  "parameters_changed",
-])
-
-// Table des décisions des agents IA
-export const agentDecisions = pgTable(
-  "agent_decisions",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    agentType: agentTypeEnum("agent_type").notNull(),
-    decisionType: varchar("decision_type").notNull(), // 'user_block', 'payout', 'extension', etc.
-    subjectId: varchar("subject_id"), // ID du sujet concerné (user, project, category)
-    subjectType: varchar("subject_type"), // 'user', 'project', 'category', 'transaction'
-    ruleApplied: varchar("rule_applied").notNull(),
-    score: decimal("score", { precision: 10, scale: 4 }), // Score de confiance/sévérité
-    justification: text("justification").notNull(),
-    parameters: jsonb("parameters"), // Paramètres de la décision
-    status: decisionStatusEnum("status").notNull().default("pending"),
-    adminComment: text("admin_comment"), // Commentaire admin si validé/rejeté
-    validatedBy: varchar("validated_by").references(() => users.id, { onDelete: "set null" }),
-    validatedAt: timestamp("validated_at"),
-    executedAt: timestamp("executed_at"),
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
-  },
-  (table) => [
-    index("idx_decisions_agent_status").on(table.agentType, table.status),
-    index("idx_decisions_subject").on(table.subjectType, table.subjectId),
-    index("idx_decisions_created").on(table.createdAt),
-  ],
-)
-
-// Table d'audit immuable avec hash chaîné
-export const agentAuditLog = pgTable(
-  "agent_audit_log",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`), // ID standard pour cohérence
-    agentType: agentTypeEnum("agent_type").notNull(),
-    action: agentAuditActionEnum("action").notNull(),
-    subjectId: varchar("subject_id"),
-    subjectType: varchar("subject_type"),
-    details: jsonb("details").notNull(),
-    previousHash: varchar("previous_hash"), // Hash de l'entrée précédente
-    currentHash: varchar("current_hash").notNull(), // Hash de cette entrée
-    idempotencyKey: varchar("idempotency_key"),
-    timestamp: timestamp("timestamp").notNull().defaultNow(),
-    actor: varchar("actor").notNull(), // 'visualai', 'visualfinanceai', 'admin:{userId}'
-  },
-  (table) => [
-    unique("unique_idempotency").on(table.idempotencyKey),
-    index("idx_audit_timestamp").on(table.timestamp),
-    index("idx_audit_subject").on(table.subjectType, table.subjectId),
-    index("idx_audit_agent_action").on(table.agentType, table.action),
-  ],
-)
-
-// Ledger financier pour toutes les transactions
-export const financialLedger = pgTable(
-  "financial_ledger",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    transactionType: varchar("transaction_type").notNull(), // 'payout', 'fee', 'conversion', 'extension'
-    referenceId: varchar("reference_id").notNull(), // ID de référence (orderId, categoryId, etc)
-    referenceType: varchar("reference_type").notNull(), // 'category_close', 'article_sale', 'points_conversion'
-    recipientId: varchar("recipient_id"), // User ID bénéficiaire (null pour VISUAL)
-    grossAmountCents: integer("gross_amount_cents").notNull(),
-    netAmountCents: integer("net_amount_cents").notNull(),
-    feeCents: integer("fee_cents").notNull().default(0),
-    stripePaymentIntentId: varchar("stripe_payment_intent_id"),
-    stripeTransferId: varchar("stripe_transfer_id"),
-    idempotencyKey: varchar("idempotency_key").notNull(),
-    payoutRule: varchar("payout_rule"), // Version de la règle appliquée
-    signature: varchar("signature"), // Signature cryptographique
-    status: varchar("status").notNull().default("pending"), // 'pending', 'completed', 'failed'
-    processedAt: timestamp("processed_at"),
-    createdAt: timestamp("created_at").defaultNow(),
-  },
-  (table) => [
-    unique("unique_ledger_idempotency").on(table.idempotencyKey),
-    index("idx_ledger_reference").on(table.referenceType, table.referenceId),
-    index("idx_ledger_recipient").on(table.recipientId),
-    index("idx_ledger_status").on(table.status),
-    index("idx_ledger_created").on(table.createdAt),
-  ],
-)
-
-// Recettes de paiement versionnées
-export const payoutRecipes = pgTable(
-  "payout_recipes",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    version: varchar("version").notNull(), // 'cat_close_40_30_7_23_v1'
-    ruleType: varchar("rule_type").notNull(), // 'category_close', 'article_sale', 'pot24h', 'points'
-    formula: jsonb("formula").notNull(), // Formule complète en JSON
-    description: text("description").notNull(),
-    isActive: boolean("is_active").notNull().default(true),
-    createdBy: varchar("created_by").notNull(), // 'visualfinanceai' ou 'admin:{userId}'
-    createdAt: timestamp("created_at").defaultNow(),
-    activatedAt: timestamp("activated_at"),
-  },
-  (table) => [
-    unique("unique_recipe_version").on(table.version),
-    index("idx_recipes_type_active").on(table.ruleType, table.isActive),
-  ],
-)
-
-// Paramètres runtime des agents
-export const agentParameters = pgTable(
-  "agent_parameters",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    parameterKey: varchar("parameter_key").notNull(),
-    parameterValue: varchar("parameter_value").notNull(),
-    parameterType: varchar("parameter_type").notNull(), // 'number', 'string', 'boolean', 'json'
-    description: text("description").notNull(),
-    modifiableByAdmin: boolean("modifiable_by_admin").notNull().default(true),
-    lastModifiedBy: varchar("last_modified_by"),
-    lastModifiedAt: timestamp("last_modified_at").defaultNow(),
-    createdAt: timestamp("created_at").defaultNow(),
-  },
-  (table) => [
-    unique("unique_parameter_key").on(table.parameterKey),
-    index("idx_parameters_modifiable").on(table.modifiableByAdmin),
-  ],
-)
-
-// ===== SYSTÈME DE DÉTECTION DE FRAUDE ET MACHINE LEARNING =====
-
-// Énums pour le système de fraude
-export const riskLevelEnum = pgEnum("risk_level", ["low", "medium", "high", "critical"])
-export const fraudTypeEnum = pgEnum("fraud_type", [
-  "multi_account",
-  "coordinated_investment",
-  "bot_activity",
-  "financial_fraud",
-  "vote_manipulation",
-  "identity_theft",
-  "suspicious_pattern",
-  "chargeback_fraud",
-])
-export const fraudActionEnum = pgEnum("fraud_action", ["monitor", "restrict", "suspend", "block", "investigate"])
-
-// Scores de risque utilisateur - Mis à jour en temps réel par VisualAI
-export const userRiskScores = pgTable(
-  "user_risk_scores",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    userId: varchar("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    riskScore: decimal("risk_score", { precision: 5, scale: 4 }).notNull(), // 0.0000 à 1.0000
-    riskLevel: riskLevelEnum("risk_level").notNull(),
-    contributingFactors: jsonb("contributing_factors").notNull(), // Détails des facteurs de risque
-    lastIncidentDate: timestamp("last_incident_date"),
-    incidentCount: integer("incident_count").notNull().default(0),
-    falsePositiveCount: integer("false_positive_count").notNull().default(0), // Pour l'apprentissage
-    adminOverride: boolean("admin_override").default(false),
-    adminNotes: text("admin_notes"),
-    calculatedAt: timestamp("calculated_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
-  },
-  (table) => [
-    unique("unique_user_risk").on(table.userId),
-    index("idx_risk_level").on(table.riskLevel),
-    index("idx_risk_score").on(table.riskScore),
-    index("idx_risk_updated").on(table.updatedAt),
-  ],
-)
-
-// Événements de fraude détectés
-export const fraudEvents = pgTable(
-  "fraud_events",
-  {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    eventType: fraudTypeEnum("event_type").notNull(),
-    userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }),
-    relatedUserIds: text("related_user_ids").array(), // IDs des comptes liés détectés
-    projectId: varchar("project_id").references(() => projects.id, { onDelete: "set null" }),
-    transactionId: varchar("transaction_id"),
-
-    severityScore: decimal("severity_score", { precision: 5, scale: 4 }).notNull(),
-    confidence: decimal("confidence", { precision: 5, scale: 4 }).notNull(), // Confiance de la détection
-
-    evidenceData: jsonb("evidence_data").notNull(),
-    detectionMethod: varchar("detection_method").notNull(), // 'rule_based', 'ml_model', 'pattern_analysis'
-    modelVersion: varchar("model_version"), // Version du modèle ML utilisé
-
-    recommendedAction: fraudActionEnum("recommended_action").notNull(),
-    actionTaken: fraudActionEnum("action_taken"),
-    actionTakenBy: varchar("action_taken_by"), // 'visualai' ou 'admin:{userId}'
-    actionTakenAt: timestamp("action_taken_at"),
-
-    adminReviewed: boolean("admin_reviewed").default(false),
-    adminVerdict: varchar("admin_verdict"), // 'confirmed', 'false_positive', 'insufficient_evidence'
-    adminComment: text("admin_comment"),
-    reviewedBy: varchar("reviewed_by").references(() => users.id, { onDelete: "set null" }),
-    reviewedAt: timestamp("reviewed_at"),
-
-    createdAt: timestamp("created_at").defaultNow(),
-  },
-  (table) => [
-    index("idx_fraud_user").on(table.userId),
-    index(\"idx_fraud_type

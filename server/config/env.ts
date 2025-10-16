@@ -26,7 +26,6 @@ const envSchema = z.object({
 
   // reCAPTCHA
   RECAPTCHA_SECRET_KEY: z.string().min(40, "RECAPTCHA_SECRET_KEY is required"),
-  NEXT_PUBLIC_RECAPTCHA_SITE_KEY: z.string().min(40, "NEXT_PUBLIC_RECAPTCHA_SITE_KEY is required"),
 
   // Redis
   KV_REST_API_URL: z.string().url("KV_REST_API_URL must be a valid URL"),
