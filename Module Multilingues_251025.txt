@@ -1,0 +1,279 @@
+# VISUAL — Module Multilingue (i18n) — Low Cost, High Reach
+
+> Objectif : rendre VISUAL disponible en plusieurs langues majeures (dont le chinois),
+> sans alourdir l’app ni les coûts. Monocodebase, ressources i18n statiques en CDN,
+> détection Edge, cache agressif, et fallbacks propres.
+
+## 1) Langues & locales cibles
+- **en-US** (Anglais), **es-ES** (Espagnol), **fr-FR** (Français), **pt-BR** (Portugais)
+- **hi-IN** (Hindi), **ar-EG** (Arabe — RTL), **zh-CN** (Chinois simplifié)
+- **id-ID** (Indonésien), **de-DE** (Allemand), **ru-RU** (Russe)
+
+> Extensible : ajouter une locale = ajouter 1 JSON + 1 entrée de config.
+
+---
+
+## 2) Structure des fichiers
+
+/i18n/
+en-US.json
+es-ES.json
+fr-FR.json
+pt-BR.json
+hi-IN.json
+ar-EG.json
+zh-CN.json
+id-ID.json
+de-DE.json
+ru-RU.json
+
+/config/markets/
+US.json ES.json FR.json BR.json IN.json
+EG.json CN.json ID.json DE.json RU.json
+
+pgsql
+Copier le code
+
+### 2.1 Schéma d’un fichier i18n (`/i18n/fr-FR.json`)
+```json
+{
+  "meta": { "locale": "fr-FR", "dir": "ltr" },
+  "app": {
+    "slogan": "Regarde-Investis-Gagne",
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue"
+  },
+  "nav": {
+    "home": "Accueil",
+    "categories": "Catégories",
+    "ads": "Petites Annonces",
+    "login": "Connexion",
+    "logout": "Déconnexion"
+  },
+  "categories": {
+    "films": "Films",
+    "videos": "Vidéos",
+    "documentaries": "Documentaires",
+    "news_voice": "Voix de l’Info",
+    "books": "Livres",
+    "podcasts": "Podcasts",
+    "vsls": "Live Show",
+    "unique_rubric_ads": "Petites Annonces"
+  },
+  "cta": {
+    "invest": "Investir",
+    "buy": "Acheter",
+    "post_ad": "Déposer une annonce"
+  },
+  "rules": {
+    "barème_euros_votes": "Barème euros → votes : 2/3/4/5/6/8/10/12/15/20 € → 1..10 votes",
+    "keys": {
+      "films": "Clé 40/30/23/7 %",
+      "news": "Vente 70/30 + Pot quotidien 60/40",
+      "books": "Vente 70/30 + Pot mensuel 60/40",
+      "podcasts": "Vente 70/30 + Pot mensuel 40/30/20/10",
+      "vsls": "Clé 40/10/40/10 %"
+    }
+  }
+}
+2.2 Particularités RTL (arabe) — /i18n/ar-EG.json
+json
+Copier le code
+{
+  "meta": { "locale": "ar-EG", "dir": "rtl" },
+  "app": { "slogan": "شاهد-استثمر-اربح", "loading": "جارٍ التحميل...", "error": "حدث خطأ" },
+  "nav": { "home": "الرئيسية", "categories": "الفئات", "ads": "الإعلانات", "login": "تسجيل الدخول", "logout": "تسجيل الخروج" },
+  "categories": {
+    "films": "أفلام",
+    "videos": "فيديوهات",
+    "documentaries": "أفلام وثائقية",
+    "news_voice": "صوت الأخبار",
+    "books": "كتب",
+    "podcasts": "البودكاست",
+    "vsls": "العروض المباشرة",
+    "unique_rubric_ads": "الإعلانات المبوبة"
+  },
+  "cta": { "invest": "استثمر", "buy": "اشترِ", "post_ad": "أنشئ إعلانًا" }
+}
+2.3 Chinois simplifié — /i18n/zh-CN.json
+json
+Copier le code
+{
+  "meta": { "locale": "zh-CN", "dir": "ltr" },
+  "app": { "slogan": "看-投-赢", "loading": "加载中…", "error": "发生错误" },
+  "nav": { "home": "首页", "categories": "分类", "ads": "分类广告", "login": "登录", "logout": "退出" },
+  "categories": {
+    "films": "电影",
+    "videos": "视频",
+    "documentaries": "纪录片",
+    "news_voice": "资讯之声",
+    "books": "图书",
+    "podcasts": "播客",
+    "vsls": "现场秀",
+    "unique_rubric_ads": "分类广告"
+  },
+  "cta": { "invest": "投资", "buy": "购买", "post_ad": "发布广告" }
+}
+3) Config marchés (devise, fuseau, activation)
+Ex. /config/markets/UK.json
+
+json
+Copier le code
+{
+  "marketId": "UK",
+  "defaultLocale": "en-GB",
+  "locales": ["en-GB"],
+  "currency": "GBP",
+  "timezone": "Europe/London",
+  "enabled": {
+    "films": true, "videos": true, "documentaries": true,
+    "news_voice": true, "books": true, "podcasts": true, "vsls": true,
+    "unique_rubric_ads": true
+  }
+}
+4) Chargement “low cost”
+Ressources i18n statiques (JSON) : servies par CDN (cache long).
+
+Chargement à la demande : import(/i18n/${locale}.json).
+
+Edge middleware : détecte country + Accept-Language, fixe locale et marketId (cookie).
+
+Fallback : si la locale n’existe pas → en-US.
+
+4.1 Hook React minimal
+ts
+Copier le code
+// useI18n.ts
+import { useEffect, useState } from "react";
+
+export function useI18n(locale: string) {
+  const [t, setT] = useState<any>(null);
+  useEffect(() => {
+    import(`../i18n/${locale}.json`).then(setT).catch(async () => {
+      const fallback = await import("../i18n/en-US.json");
+      setT(fallback);
+    });
+  }, [locale]);
+  return t;
+}
+4.2 Middleware (Edge) — pseudo Next.js
+ts
+Copier le code
+// middleware.ts (pseudo)
+const LOCALE_BY_COUNTRY: Record<string, string> = {
+  FR:"fr-FR", ES:"es-ES", US:"en-US", UK:"en-GB", BR:"pt-BR",
+  IN:"hi-IN", EG:"ar-EG", CN:"zh-CN", ID:"id-ID", DE:"de-DE", RU:"ru-RU"
+};
+
+export function middleware(req: Request) {
+  const country = (req as any).geo?.country || "US";
+  const locale = LOCALE_BY_COUNTRY[country] || "en-US";
+  // Set cookies for client
+  // redirect/rewrite to /{locale} route
+}
+5) Formats, devise, pluralisation (sans dépendances lourdes)
+Dates/nombres/devise : Intl.DateTimeFormat, Intl.NumberFormat (natif, gratuit).
+
+Pluralisation simple : messages paramétrés dans JSON (éviter lib lourdes).
+
+RTL : appliquer [dir="rtl"] au <html> si meta.dir === 'rtl'.
+
+Ex. : prix formaté
+
+ts
+Copier le code
+const fmt = new Intl.NumberFormat(locale, { style: "currency", currency: currencyCode });
+fmt.format(12.5); // "12,50 €" (fr-FR), "€12.50" (en-GB), "¥12.50" (zh-CN si CNY)
+6) SEO i18n (indispensable)
+Balises <link rel="alternate" hreflang="..."> pour chaque locale.
+
+Slugs traduits par locale (ex: /fr-FR/petites-annonces vs /en-GB/classifieds).
+
+Sitemaps par locale.
+
+7) Tests & coût
+Tests snapshot sur fichiers JSON (clés présentes, pas de doublons).
+
+Budget : fichiers JSON servis par CDN (~quelques Ko) → quasi gratuit.
+
+Aucun serveur dédié i18n : tout est statique, cache long + stale-while-revalidate.
+
+8) Checklist d’intégration
+ Créer /i18n/*.json pour les 10 locales listées.
+
+ Créer /config/markets/*.json (devise, fuseau, activation).
+
+ Implémenter middleware Edge (locale + marketId).
+
+ Intégrer useI18n(locale) et passer dir au <html>.
+
+ Ajouter hreflang+sitemap par locale.
+
+ Mettre en cache CDN avec TTL long (JSON i18n).
+
+Résultat : multilingue puissant, déploiement mondial, coût minimal.
+
+diff
+Copier le code
+
+---
+
+## 📄 Fichier `.txt`
+
+```text
+VISUAL — Module Multilingue (i18n) — Low Cost
+
+1) Locales supportées
+- en-US, es-ES, fr-FR, pt-BR, hi-IN, ar-EG (RTL), zh-CN, id-ID, de-DE, ru-RU
+Extensible par simple ajout de JSON.
+
+2) Arborescence
+/i18n/{locale}.json
+/config/markets/{COUNTRY}.json
+
+3) Exemple i18n (fr-FR)
+/i18n/fr-FR.json :
+- meta.locale="fr-FR", meta.dir="ltr"
+- app.slogan="Regarde-Investis-Gagne"
+- nav.home, nav.categories, nav.ads, nav.login, nav.logout
+- categories: films, videos, documentaries, news_voice, books, podcasts, vsls, unique_rubric_ads
+- cta: invest, buy, post_ad
+- rules: barème euros->votes + clés de répartition
+
+4) Exemple ar-EG (RTL)
+/i18n/ar-EG.json :
+- meta.dir="rtl" ; UI basculée en RTL
+
+5) Exemple zh-CN
+- Slogan: 看-投-赢 ; nav/catégories traduits
+
+6) Config marché
+/config/markets/UK.json :
+- marketId, defaultLocale=en-GB, currency=GBP, timezone=Europe/London
+- enabled : activer 7 catégories + 1 rubrique
+
+7) Chargement low-cost
+- JSON i18n statiques servis par CDN (cache long)
+- import dynamique : import(`../i18n/${locale}.json`)
+- fallback: en-US si manquant
+- middleware Edge: détection country + Accept-Language → set locale & marketId (cookie)
+
+8) Formats natifs
+- Intl.DateTimeFormat / Intl.NumberFormat (dates, nombres, devises)
+- Pluralisation simple par variantes de chaînes (éviter libs lourdes)
+- RTL: appliquer dir="rtl" à <html> si meta.dir="rtl"
+
+9) SEO i18n
+- hreflang par locale, sitemaps, slugs traduits
+
+10) Tests & coûts
+- tests snapshots JSON (clés présentes)
+- coût proche de zéro (CDN + serverless pay-per-use)
+
+Checklist
+- Créer JSON i18n pour 10 locales
+- Créer JSON marché (devise/fuseau/activation)
+- Middleware Edge OK
+- Hook useI18n OK + dir RTL
+- hreflang + sitemaps
+- Cache CDN long (stale-while-revalidate)
