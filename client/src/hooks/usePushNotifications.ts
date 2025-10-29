@@ -1,4 +1,4 @@
-/**
+'''/**
  * Hook React pour gérer les Push Notifications PWA
  * Gère la permission, subscription et réception
  */
@@ -149,13 +149,19 @@ export const usePushNotifications = () => {
       });
 
       // Envoyer la subscription au serveur
-      await fetch('/api/push/subscribe', {
+      const serverResponse = await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           subscription: newSubscription.toJSON(),
         }),
       });
+
+      if (!serverResponse.ok) {
+        // Si le serveur échoue, on annule la subscription locale pour éviter un état fantôme
+        await newSubscription.unsubscribe();
+        throw new Error('Failed to save subscription on server.');
+      }
 
       setSubscription(newSubscription);
       setIsSubscribed(true);
@@ -186,17 +192,18 @@ export const usePushNotifications = () => {
     setIsLoading(true);
 
     try {
-      // Désabonner du PushManager
-      await subscription.unsubscribe();
-
-      // Informer le serveur
-      await fetch('/api/push/unsubscribe', {
+      // Informer le serveur d'abord
+      const response = await fetch('/api/push/unsubscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          endpoint: subscription.endpoint,
-        }),
       });
+
+      if (!response.ok) {
+        console.warn('[Push] Server unsubscribe failed, proceeding with client unsubscribe.');
+      }
+
+      // Désabonner du PushManager localement
+      await subscription.unsubscribe();
 
       setSubscription(null);
       setIsSubscribed(false);
@@ -222,23 +229,24 @@ export const usePushNotifications = () => {
 
   // Envoyer une notification test
   const sendTestNotification = useCallback(async () => {
-    if (!isSubscribed || !subscription) {
+    if (!isSubscribed) {
       toast({
         title: 'Non abonné',
-        description: 'Veuillez d\'abord vous abonner aux notifications',
+        description: 'Veuillez d'abord vous abonner aux notifications',
         variant: 'destructive',
       });
       return;
     }
 
     try {
-      await fetch('/api/push/send-test', {
+      const response = await fetch('/api/push/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          endpoint: subscription.endpoint,
-        }),
       });
+
+      if (!response.ok) {
+        throw new Error('Server response was not ok.');
+      }
 
       toast({
         title: 'Notification envoyée',
@@ -248,21 +256,19 @@ export const usePushNotifications = () => {
       console.error('[Push] Error sending test notification:', error);
       toast({
         title: 'Erreur',
-        description: 'Impossible d\'envoyer la notification test',
+        description: 'Impossible d'envoyer la notification test',
         variant: 'destructive',
       });
     }
-  }, [isSubscribed, subscription, toast]);
+  }, [isSubscribed, toast]);
 
   return {
-    // États
     permission,
     isSubscribed,
     subscription,
     isSupported,
     isLoading,
     
-    // Actions
     requestPermission,
     subscribe,
     unsubscribe,
@@ -270,7 +276,6 @@ export const usePushNotifications = () => {
   };
 };
 
-// Utilitaire pour convertir la clé VAPID
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding)
@@ -286,3 +291,4 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 
   return outputArray;
 }
+'''
