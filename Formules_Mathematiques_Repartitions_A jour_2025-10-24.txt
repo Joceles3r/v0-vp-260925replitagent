@@ -1,0 +1,131 @@
+# Formules Mathématiques et Répartitions Pourcentages — Catégories et Rubrique — 2025-10-24
+
+## Préambule
+**Plateforme : VISUAL** — Slogan : **Regarde-Investis-Gagne**  
+**Barème commun Investisseurs (euros → votes / VISUpoints)** : **2 / 3 / 4 / 5 / 6 / 8 / 10 / 12 / 15 / 20 € → 1 / 2 / 3 / 4 / 5 / 6 / 7 / 8 / 9 / 10 votes**.  
+**Référence interne** : 100 VISUpoints = 1 €.
+
+---
+
+## Sommaire
+1. Films / Vidéos / Documentaires — **40/30/23/7 %**  
+2. Voix de l’Info — **Vente 70/30** + **Pot quotidien 60/40**  
+3. Livres — **Vente 70/30** + **Pot mensuel 60/40**  
+4. Podcasts — **Vente 70/30** + **Pot mensuel 40/30/20/10**  
+5. VSLS (Visual Studio Live Show) — **40/10/40/10 %**  
+6. Rubrique **Petites Annonces** — **Modèle économique pro**  
+7. Règles transverses (arrondis, RGPD, anti-fraude)  
+8. API de référence & settlement  
+9. Check-list déploiement
+
+---
+
+## 1) Films / Vidéos / Documentaires — Clôture **40/30/23/7 %**
+Soit **P** le **pot net** (après frais) à la clôture.
+
+- **40 %** → **Investisseurs TOP 10** :  
+  \( P_{I,Top10} = 0,40\,P \) et \( \text{part}_i = P_{I,Top10} \times \dfrac{V_i}{\sum_{j \in Top10} V_j} \)
+- **30 %** → **Porteurs TOP 10** :  
+  \( P_{C,Top10} = 0,30\,P \) et \( \text{part}_c = P_{C,Top10} \times \dfrac{\text{score}_c}{\sum \text{score}_{Top10}} \)
+- **7 %** → **Investisseurs 11–100** : \( P_{I,11–100} = 0,07\,P \) (équiparti ou pro-rata votes)
+- **23 %** → **VISUAL** : \( P_{VISUAL} = 0,23\,P \)
+
+> **Quotas** (rappel cohérent) : Clips ≤5 min (2/mois), Docs 5–30 min (1/mois), Films >30 min (1/trimestre).  
+> **Tranches €→votes** : barème commun.
+
+---
+
+## 2) Voix de l’Info — **Vente 70/30** + **Pot quotidien 60/40**
+### Flux A — Vente unitaire
+- **Net_vente** = Prix payé − Frais paiement.  
+- **Auteur 70 %**, **VISUAL 30 %** (au centime).
+
+### Flux B — Pot du jour (J → J+1 00:15)
+Soit **P_day** le **pot net** du jour :
+- **60 %** → **Auteurs TOP 10** (pro-rata score ou poids par rang 10→1).  
+- **40 %** → **Lecteurs gagnants** (ayant acheté ≥1 article TOP 10) avec  
+  \( W_i = \sum ( \text{votes}_i \times \text{poids}_c ) \), puis \( \text{part}_i = 0{,}40P_{day} \times \dfrac{W_i}{\sum W} \).
+
+---
+
+## 3) Livres — **Vente 70/30** + **Pot mensuel 60/40**
+### Flux A — Vente unitaire (livre)
+- **Net_vente** ; **Auteur 70 %**, **VISUAL 30 %**.
+
+### Flux B — Pot mensuel (mois calendaire)
+Soit **P_mois** :
+- **60 %** → **Auteurs TOP 10** : pro-rata **score** (ou **poids 10→1**).  
+- **40 %** → **Lecteurs-investisseurs gagnants** (ayant investi sur ≥1 auteur du TOP10) : pro-rata **W_i = Σ(votes_i×poids_c)**.
+
+> **Repêchage** (optionnel) : rangs 11–100 via ticket (ex. 25 €) sous 24 h.  
+> **Auto-report** : TOP 10 reconduits (paramétrable).  
+> **Tranches** : barème commun.
+
+---
+
+## 4) Podcasts — **Vente 70/30** + **Pot mensuel 40/30/20/10**
+### Flux A — Vente épisode
+- **Net_vente**, **Porteur 70 %**, **VISUAL 30 %**.
+
+### Flux B — Pot mensuel
+Soit **P** :
+- **40 %** → **Porteurs** (impressions × complétion)  
+- **30 %** → **Investisseurs** (pro-rata **votes × listen_score**)  
+  avec \( listen\_score = 0{,}7 \times \text{complétion} + 0{,}3 \times \text{auditeurs\_uniques\_norm} \)  
+  **Cap** recommandé : ≤ **20 %** des votes globaux / investisseur  
+- **20 %** → **VISUAL**  
+- **10 %** → **Bonus Pool** (TOP 10, primes)
+
+**Classement** : 1→N par **score = votes × listen_score** ; **archives mensuelles**.  
+**Tranches** : barème commun.
+
+---
+
+## 5) VSLS (Visual Studio Live Show) — **40/10/40/10 %**
+**Show live** (vote temps réel). Soit **P_live** le pot net :
+
+- **40 %** → **Artiste gagnant**  
+- **10 %** → **Artiste perdant**  
+- **40 %** → **Investisseurs gagnants** (ceux qui ont soutenu le gagnant) : pro-rata **votes** (ou montants)  
+- **10 %** → **VISUAL**
+
+**Règles VSLS** :
+- **Tranches €→votes** : barème commun.  
+- **Égalités** : départage par **engagement** puis **ancienneté du vote**.  
+- **Anti-abus** : limites de fréquence d’achats, détection patterns, annulation si fraude.  
+- **Traçabilité** : WebSocket + journal d’événement, export CSV.
+
+---
+
+## 6) Rubrique **Petites Annonces** — **Modèle économique pro**
+**Objet** : place de marché (casting, matériel, services, locaux). **Hors investissement**.
+
+**Monétisation (configurable, cumulable) :**
+1. **Frais fixes** (ex. Basic 5 €, Pro 15 €, Premium 29 €).  
+2. **Mise en avant** (Boost 7 j = 9 €, 14 j = 15 €, 30 j = 25 €).  
+3. **Commission** sur transaction conclue via la plateforme : **α %** (ex. 8 %) sur **montant net** (après frais).  
+4. **Abonnements Pro** (mensuels) : pack d’annonces, outils (stats, templates, multi-utilisateurs).
+
+**Conformité & opérations :**
+- RGPD (consentement, conservation limitée), **modération IA+humaine**, **sanctions graduées**.  
+- Sécurité : escrow (optionnel) pour services, **KYC Pro** pour comptes à volume.  
+- Facturation : TVA/TVS, facture PDF, exports **CSV/Excel**.  
+- KPI : taux de conversion, délai de placement, ARPU, LTV.
+
+---
+
+## 7) Règles transverses
+- **Arrondis** : 2 décimales (résidus → VISUAL pour bouclage).  
+- **Barème** : **2/3/4/5/6/8/10/12/15/20 € → 1..10 votes** (commun).  
+- **RGPD** & **anti-fraude** : consentements, caps (ex. Podcasts ≤20 % votes/investisseur), limites de fréquence, scoring.  
+- **KYC/Âge** : mineurs limités, retraits différés, KYC à la majorité.
+
+---
+
+## 8) API & settlement (référence)
+- `POST /api/invest` — {{ category, targetId, amount }} → crédite **votes**  
+- `POST /api/sale` — {{ category, targetId, price, currency }} → split **70/30**  
+- `POST /api/{{category}}/close` (ADMIN/CRON) — fige pot, calcule **payouts**  
+- `GET /api/{{category}}/rankings?period=...` — classements + parts
+
+_Pseudo-code :_
