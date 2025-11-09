@@ -116,7 +116,7 @@ async def get_me(current_user: User = Depends(get_current_user_dep)):
 @api_router.post("/projects", response_model=Project)
 async def create_project(
     project_data: ProjectCreate,
-    current_user: User = Depends(lambda creds=Depends(security): get_current_user(creds, db))
+    current_user: User = Depends(get_current_user_dep)
 ):
     """Créer un nouveau projet"""
     project = Project(
@@ -134,7 +134,7 @@ async def create_project(
 
 @api_router.get("/projects", response_model=List[Project])
 async def get_projects(
-    current_user: User = Depends(lambda creds=Depends(security): get_current_user(creds, db))
+    current_user: User = Depends(get_current_user_dep)
 ):
     """Obtenir tous les projets de l'utilisateur"""
     projects = await db.projects.find({"user_id": current_user.id}, {"_id": 0}).to_list(1000)
@@ -152,7 +152,7 @@ async def get_projects(
 @api_router.get("/projects/{project_id}", response_model=Project)
 async def get_project(
     project_id: str,
-    current_user: User = Depends(lambda creds=Depends(security): get_current_user(creds, db))
+    current_user: User = Depends(get_current_user_dep)
 ):
     """Obtenir un projet spécifique"""
     project_data = await db.projects.find_one({"id": project_id, "user_id": current_user.id}, {"_id": 0})
@@ -180,7 +180,7 @@ async def get_project(
 async def authorize_share(
     request: Request,
     auth_request: AuthorizeShareRequest,
-    current_user: User = Depends(lambda creds=Depends(security): get_current_user(creds, db))
+    current_user: User = Depends(get_current_user_dep)
 ):
     """
     Autoriser la diffusion d'un projet sur les réseaux sociaux VISUAL.
@@ -279,7 +279,7 @@ async def authorize_share(
 @api_router.post("/social/revoke")
 async def revoke_authorization(
     project_id: str,
-    current_user: User = Depends(lambda creds=Depends(security): get_current_user(creds, db))
+    current_user: User = Depends(get_current_user_dep)
 ):
     """Révoquer l'autorisation de diffusion pour un projet"""
     auth = await db.social_authorizations.find_one({
@@ -306,7 +306,7 @@ async def revoke_authorization(
 
 @api_router.get("/social/authorizations")
 async def get_authorizations(
-    current_user: User = Depends(lambda creds=Depends(security): get_current_user(creds, db))
+    current_user: User = Depends(get_current_user_dep)
 ):
     """Obtenir toutes les autorisations de l'utilisateur"""
     authorizations = await db.social_authorizations.find(
@@ -319,7 +319,7 @@ async def get_authorizations(
 @api_router.get("/social/links/{project_id}")
 async def get_share_links(
     project_id: str,
-    current_user: User = Depends(lambda creds=Depends(security): get_current_user(creds, db))
+    current_user: User = Depends(get_current_user_dep)
 ):
     """Obtenir les liens de partage pour un projet"""
     # Vérifier que le projet appartient à l'utilisateur
@@ -352,7 +352,7 @@ async def get_share_links(
 @api_router.get("/social/stats/{project_id}")
 async def get_project_stats(
     project_id: str,
-    current_user: User = Depends(lambda creds=Depends(security): get_current_user(creds, db))
+    current_user: User = Depends(get_current_user_dep)
 ):
     """Obtenir les statistiques de promotion d'un projet"""
     # Vérifier que le projet appartient à l'utilisateur
@@ -492,7 +492,7 @@ async def get_leaderboard():
 async def publish_to_social(
     project_id: str,
     platforms: List[SocialPlatform],
-    current_user: User = Depends(lambda creds=Depends(security): get_current_user(creds, db))
+    current_user: User = Depends(get_current_user_dep)
 ):
     """
     [ADMIN] Publier un projet sur les réseaux sociaux officiels VISUAL.
