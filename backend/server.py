@@ -45,6 +45,10 @@ api_router = APIRouter(prefix="/api")
 async def get_db():
     return db
 
+# Dependency pour obtenir l'utilisateur actuel
+async def get_current_user_dep(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    return await get_current_user(credentials, db)
+
 # ============================================================================
 # AUTH ROUTES
 # ============================================================================
