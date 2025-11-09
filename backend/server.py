@@ -101,7 +101,7 @@ async def login(credentials: UserLogin):
     return Token(access_token=access_token, token_type="bearer")
 
 @api_router.get("/auth/me", response_model=UserResponse)
-async def get_me(current_user: User = Depends(lambda creds=Depends(security): get_current_user(creds, db))):
+async def get_me(current_user: User = Depends(lambda: get_current_user(Depends(security), db))):
     """Obtenir le profil de l'utilisateur connecté"""
     return UserResponse(**current_user.model_dump())
 
