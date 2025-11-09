@@ -101,3 +101,289 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: |
+  Construire un module complet de promotion VISUAL permettant aux porteurs/créateurs de promouvoir leurs projets sur les réseaux sociaux (YouTube, TikTok, Facebook). 
+  Le système doit inclure:
+  - Authentification des porteurs
+  - Gestion des projets
+  - Autorisation de diffusion sur les réseaux sociaux
+  - Génération de liens de partage avec tracking UTM
+  - Système de statistiques (vues, clics)
+  - Système de récompenses (VISUpoints, badges)
+  - Classement mensuel des ambassadeurs
+  - Emplacements pour les clés API des réseaux sociaux (à fournir plus tard)
+
+backend:
+  - task: "Configuration et variables d'environnement"
+    implemented: true
+    working: true
+    file: "/app/backend/.env, /app/backend/config.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Configuration complète avec emplacements pour toutes les clés API (YouTube, TikTok, Facebook). Variables JWT configurées."
+
+  - task: "Modèles de données (Users, Projects, Authorizations, Stats)"
+    implemented: true
+    working: true
+    file: "/app/backend/models.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Tous les modèles Pydantic créés: User, Project, SocialAuthorization, SocialStats, Leaderboard, etc."
+
+  - task: "Système d'authentification JWT"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/auth.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Authentification avec JWT implémentée: register, login, token verification. À tester."
+
+  - task: "Routes API d'authentification"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Routes /api/auth/register, /api/auth/login, /api/auth/me créées. À tester."
+
+  - task: "Routes API de gestion des projets"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Routes CRUD projets: POST /api/projects, GET /api/projects, GET /api/projects/{id}. À tester."
+
+  - task: "Service de gestion des réseaux sociaux"
+    implemented: true
+    working: true
+    file: "/app/backend/social_service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Service créé avec génération de liens UTM et mocks pour YouTube/TikTok/Facebook APIs (en attente des vraies clés)"
+
+  - task: "Routes API de promotion sociale"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Routes complètes: authorize, revoke, get_links, get_stats, track_event. Attribution automatique du badge 'Ambassadeur VISUAL' et VISUpoints."
+
+  - task: "Système de classement (Leaderboard)"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Route /api/leaderboard avec agrégation MongoDB. Calcul du top 20 des ambassadeurs."
+
+  - task: "Route admin de publication"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Route /api/admin/publish créée (mock pour l'instant, en attente des vraies API keys)"
+
+frontend:
+  - task: "Context d'authentification React"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/context/AuthContext.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "AuthContext avec login, register, logout. Stockage du token dans localStorage."
+
+  - task: "Services API frontend"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/services/api.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Tous les services API créés: projects, authorization, stats, leaderboard."
+
+  - task: "Navigation et Navbar"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Navbar.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Navbar avec affichage conditionnel selon authentification, VISUpoints, badges."
+
+  - task: "Page de connexion"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Login.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Page de login avec formulaire et gestion des erreurs."
+
+  - task: "Page d'inscription"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Register.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Page d'inscription avec validation des mots de passe."
+
+  - task: "Page d'accueil"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Home.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Page d'accueil avec présentation du P.O.D.V., features, comment ça marche, récompenses."
+
+  - task: "Tableau de bord porteur"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Dashboard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Dashboard complet avec stats, badges, projets récents, présentation du P.O.D.V."
+
+  - task: "Page de liste des projets"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Projects.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Liste des projets avec cartes cliquables et état vide."
+
+  - task: "Page de création de projet"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/NewProject.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Formulaire de création avec titre, description, video_url, thumbnail_url."
+
+  - task: "Page de détail du projet avec promotion sociale"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/ProjectDetail.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Page complète avec panneau d'autorisation, sélection des plateformes, génération de liens, affichage des stats, copie des liens, révocation."
+
+  - task: "Page de classement"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Leaderboard.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Classement avec emojis de rangs, badges, récompenses affichées."
+
+  - task: "Routes et routing React"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Toutes les routes configurées avec protection pour les routes authentifiées."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Backend: Tester toutes les routes API"
+    - "Frontend: Tester le flow complet d'inscription/login"
+    - "Frontend: Tester la création de projet et autorisation"
+    - "Frontend: Tester l'affichage des liens et stats"
+  stuck_tasks: []
+  test_all: true
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Module VISUAL Social Promotion construit au complet. Backend FastAPI avec MongoDB et Frontend React. Tous les emplacements pour les clés API sont configurés dans .env. Le système utilise des mocks pour les APIs YouTube/TikTok/Facebook en attendant les vraies clés. Prêt pour les tests complets."
