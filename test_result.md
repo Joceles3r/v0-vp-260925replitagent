@@ -141,15 +141,18 @@ backend:
 
   - task: "Système d'authentification JWT"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/auth.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Authentification avec JWT implémentée: register, login, token verification. À tester."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Authentication system working correctly. Fixed dependency injection issue in server.py. Register, login, and profile retrieval all functional."
 
   - task: "Routes API d'authentification"
     implemented: true
