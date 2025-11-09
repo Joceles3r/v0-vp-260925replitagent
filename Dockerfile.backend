@@ -1,0 +1,52 @@
+# Multi-stage build pour optimiser la taille de l'image
+FROM python:3.11-slim as builder
+
+# Variables d'environnement pour Python
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /app
+
+# Installer les dépendances système nécessaires
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copier et installer les dépendances Python
+COPY backend/requirements.txt .
+RUN pip install --user --no-warn-script-location -r requirements.txt
+
+# Stage final - image légère
+FROM python:3.11-slim
+
+# Créer un utilisateur non-root pour la sécurité
+RUN useradd -m -u 1000 appuser
+
+WORKDIR /app
+
+# Copier les dépendances Python depuis le builder
+COPY --from=builder /root/.local /home/appuser/.local
+
+# Copier le code de l'application
+COPY backend/ .
+
+# Changer le propriétaire des fichiers
+RUN chown -R appuser:appuser /app
+
+# Passer à l'utilisateur non-root
+USER appuser
+
+# Ajouter le répertoire local de pip au PATH
+ENV PATH=/home/appuser/.local/bin:$PATH
+
+# Exposer le port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD python -c "import requests; requests.get('http://localhost:8000/api/health', timeout=5)"
+
+# Commande de démarrage avec workers optimisés
+CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
