@@ -384,8 +384,7 @@ class VisualAPITester:
             return
         
         try:
-            revoke_data = {"project_id": self.project_id}
-            response = self.make_request("POST", "/social/revoke", revoke_data)
+            response = self.make_request("POST", f"/social/revoke?project_id={self.project_id}")
             
             if response.status_code == 200:
                 data = response.json()
